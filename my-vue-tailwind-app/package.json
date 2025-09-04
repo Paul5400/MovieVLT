@@ -1,0 +1,23 @@
+{
+  "name": "my-vue-tailwind-app",
+  "version": "1.0.0",
+  "description": "A Vue.js project with Tailwind CSS",
+  "main": "src/main.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "vite preview"
+  },
+  "dependencies": {
+    "vue": "^3.2.0",
+    "tailwindcss": "^2.2.0",
+    "postcss": "^8.3.0",
+    "autoprefixer": "^10.3.0"
+  },
+  "devDependencies": {
+    "vite": "^2.5.0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT"
+}
