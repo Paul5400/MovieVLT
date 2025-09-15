@@ -1,29 +1,91 @@
+<!-- filepath: /home/paul/Documents/Web/S5/MovieVLT/my-vue-tailwind-app/src/App.vue -->
 <template>
-  <div class="bg-gray-900 min-h-screen">
-    <!-- Header moderne avec navigation -->
-    <Header @navigate="currentPage = $event" />
+  <div class="relative min-h-screen bg-gradient-to-br from-gray-800 via-gray-700/40 to-gray-900">
+    
+    <!-- Header -->
+    <header class="absolute inset-x-0 top-0 z-50">
+      <nav aria-label="Global" class="flex items-center justify-between px-6 py-4 lg:px-8">
+        <div class="flex lg:flex-1">
+          <a href="#" @click.prevent="currentPage = 'films'" class="-m-1.5 p-1.5">
+            <span class="sr-only">MovieVLT</span>
+            <img
+              src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500"
+              alt="MovieVLT Logo"
+              class="h-8 w-auto"
+            />
+          </a>
+        </div>
+        <div class="flex lg:hidden">
+          <button
+            type="button"
+            class="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-200"
+          >
+            <span class="sr-only">Open main menu</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-6 w-6">
+              <path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+        </div>
+        <div class="hidden lg:flex lg:gap-x-12">
+          <a href="#" @click.prevent="currentPage = 'films'" class="text-sm font-semibold text-white">Films</a>
+          <a href="#" @click.prevent="currentPage = 'acteurs'" class="text-sm font-semibold text-white">Acteurs</a>
+          <a href="#" @click.prevent="currentPage = 'realisateurs'" class="text-sm font-semibold text-white">Réalisateurs</a>
+        </div>
+        <div class="hidden lg:flex lg:flex-1 lg:justify-end">
+          <!-- Barre de recherche moderne -->
+          <div class="relative">
+            <input
+              type="text"
+              placeholder="Search..."
+              class="peer w-full rounded-full border border-gray-300 bg-white py-2 pl-4 pr-10 text-sm text-gray-700 shadow-sm placeholder-gray-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+              <svg
+                class="h-5 w-5 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
 
-    <!-- Hero Section inspirée du template de base -->
-    <section class="pt-28 pb-12 bg-gradient-to-br from-indigo-700 to-purple-700">
-      <div class="container mx-auto px-6 text-center">
+    <!-- Hero Section avec overlay moderne -->
+    <div class="relative isolate px-6 pt-14 lg:px-8">
+      <!-- Background décoratif avec blur -->
+      <div
+        aria-hidden="true"
+        class="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"
+      >
+        <div
+          style="clip-path: polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)"
+          class="relative left-1/2 -translate-x-1/2 rotate-30 bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] opacity-30 w-[36rem] h-[20rem]"
+        ></div>
+      </div>
+      <!-- Overlay principal avec effet de flou en fond semi-transparent -->
+      <section class="container-2xl mx-auto bg-slate-900 bg-opacity-90 backdrop-blur-[80px] bg-clip-padding py-32 sm:py-48 lg:py-56 text-center">
         <h1 class="text-5xl sm:text-7xl font-extrabold text-white mb-4">
           Vitrine des Films
         </h1>
         <p class="text-xl text-gray-200 mb-8">
           Découvrez les films récents, explorez les acteurs et réalisateurs.
         </p>
-      </div>
-    </section>
+      </section>
+    </div>
 
-    <!-- Section principale qui affiche le composant en fonction de la navigation -->
+    <!-- Main Content: affichage dynamique en fonction de la navigation -->
     <section class="py-12">
       <div class="container mx-auto">
         <component
           :is="currentComponent"
           @show-details="showDetails"
+          :film="selectedFilm"
           @navigate="currentPage = $event"
           @back="selectedFilm = null"
-          :film="selectedFilm"
         />
       </div>
     </section>
@@ -31,7 +93,6 @@
 </template>
 
 <script>
-import Header from "./components/Header.vue";
 import HomeFilms from "./components/HomeFilms.vue";
 import ActeursPage from "./components/ActeursPage.vue";
 import RealisateursPage from "./components/RealisateursPage.vue";
@@ -40,7 +101,6 @@ import FilmDetails from "./components/FilmDetails.vue";
 export default {
   name: "App",
   components: {
-    Header,
     HomeFilms,
     ActeursPage,
     RealisateursPage,
@@ -70,5 +130,5 @@ export default {
 </script>
 
 <style>
-/* Styles globaux additionnels si nécessaire */
+/* Ajoutez ici vos styles globaux si besoin */
 </style>
