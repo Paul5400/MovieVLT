@@ -3,7 +3,7 @@
     <div class="container mx-auto px-6 py-4 flex items-center justify-between">
       <!-- Logo et titre -->
       <div class="flex items-center">
-        <a href="#" class="flex items-center">
+        <a href="#" @click.prevent="$emit('navigate', 'films')" class="flex items-center">
           <img
             src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500"
             alt="MovieVLT Logo"
@@ -13,12 +13,12 @@
         </a>
       </div>
       <!-- Liens de navigation -->
-      <nav class="hidden md:flex space-x-8">
-        <a href="#" class="text-white hover:text-indigo-400">Films</a>
-        <a href="#" class="text-white hover:text-indigo-400">Acteurs</a>
-        <a href="#" class="text-white hover:text-indigo-400">Réalisateurs</a>
+      <nav class="hidden md:flex space-x-6">
+        <a href="#" @click.prevent="$emit('navigate', 'films')" class="text-white hover:text-indigo-400">Films</a>
+        <a href="#" @click.prevent="$emit('navigate', 'acteurs')" class="text-white hover:text-indigo-400">Acteurs</a>
+        <a href="#" @click.prevent="$emit('navigate', 'realisateurs')" class="text-white hover:text-indigo-400">Réalisateurs</a>
       </nav>
-      <!-- Champ de recherche -->
+      <!-- Champ de recherche (non fonctionnel pour cet exemple) -->
       <div class="flex items-center">
         <div class="relative">
           <input
@@ -41,10 +41,10 @@
 
 <script>
 export default {
-  name: "Header"
+  name: "Header",
 };
 </script>
 
 <style scoped>
-/* Ajoutez ici des styles spécifiques si nécessaire */
+/* Styles spécifiques si nécessaire */
 </style>

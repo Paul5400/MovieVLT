@@ -8,13 +8,19 @@
         placeholder="Recherche..."
         class="px-4 py-2 rounded-l-md focus:outline-none text-black"
       />
-      <button @click="searchMovies" class="bg-indigo-500 hover:bg-indigo-400 px-4 py-2 rounded-r-md">
+      <button
+        @click="searchMovies"
+        class="bg-indigo-500 hover:bg-indigo-400 px-4 py-2 rounded-r-md"
+      >
         Rechercher
       </button>
     </div>
     <div v-if="loading" class="text-center">Chargement...</div>
     <div v-if="error" class="text-red-500 text-center">{{ error }}</div>
-    <div v-if="movies && movies.length" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+    <div
+      v-if="movies && movies.length"
+      class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"
+    >
       <div
         v-for="movie in movies"
         :key="movie.imdbID"
@@ -27,8 +33,14 @@
           class="mb-2 w-full h-64 object-cover rounded-md"
         />
         <h3 class="text-xl font-semibold">{{ movie.Title }}</h3>
-        <p class="mb-2">Année : {{ movie.Year }}</p>
-        <button @click="getMovieDetails(movie.imdbID)" class="bg-indigo-500 hover:bg-indigo-400 px-3 py-1 rounded">
+        <p class="mb-2">
+          Année:
+          <span>{{ fixYear(movie.Year) }}</span>
+        </p>
+        <button
+          @click="getMovieDetails(movie.imdbID)"
+          class="bg-indigo-500 hover:bg-indigo-400 px-3 py-1 rounded"
+        >
           Voir les détails
         </button>
       </div>
@@ -42,18 +54,21 @@ export default {
   data() {
     const currentYear = new Date().getFullYear().toString();
     return {
-      // Recherche par défaut par l'année actuelle
       searchQuery: currentYear,
       movies: [],
       loading: false,
       error: null,
-      apiKey: "321b3ca4" // Votre clé API OMDb
+      apiKey: "321b3ca4", // Votre clé API OMDb
     };
   },
   mounted() {
     this.searchMovies();
   },
   methods: {
+    fixYear(year) {
+      const match = String(year).match(/\d{4}/);
+      return match ? match[0] : year;
+    },
     async searchMovies() {
       this.loading = true;
       this.error = null;
@@ -61,7 +76,9 @@ export default {
       const currentYear = new Date().getFullYear();
       try {
         const response = await fetch(
-          `https://www.omdbapi.com/?apikey=${this.apiKey}&s=${encodeURIComponent(this.searchQuery)}&y=${currentYear}`
+          `https://www.omdbapi.com/?apikey=${this.apiKey}&s=${encodeURIComponent(
+            this.searchQuery
+          )}&y=${currentYear}`
         );
         if (!response.ok) {
           throw new Error(`Erreur HTTP: ${response.status}`);
@@ -99,11 +116,11 @@ export default {
       } finally {
         this.loading = false;
       }
-    }
-  }
+    },
+  },
 };
 </script>
 
 <style scoped>
-/* Styles spécifiques si nécessaire */
+/* Styles complémentaires si nécessaire */
 </style>

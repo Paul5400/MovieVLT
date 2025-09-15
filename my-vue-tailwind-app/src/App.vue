@@ -1,7 +1,7 @@
 <template>
   <div class="bg-gray-900 min-h-screen">
-    <!-- Header moderne -->
-    <Header />
+    <!-- Header moderne avec navigation -->
+    <Header @navigate="currentPage = $event" />
 
     <!-- Hero Section inspirée du template de base -->
     <section class="pt-28 pb-12 bg-gradient-to-br from-indigo-700 to-purple-700">
@@ -10,21 +10,21 @@
           Vitrine des Films
         </h1>
         <p class="text-xl text-gray-200 mb-8">
-          Découvrez les films récents, explorez les acteurs et les réalisateurs.
+          Découvrez les films récents, explorez les acteurs et réalisateurs.
         </p>
-        <div>
-          <button class="bg-white text-indigo-700 font-semibold py-3 px-8 rounded-full hover:bg-gray-100">
-            Explorer
-          </button>
-        </div>
       </div>
     </section>
 
-    <!-- Section principale : Affichage de FilmList ou FilmDetails -->
+    <!-- Section principale qui affiche le composant en fonction de la navigation -->
     <section class="py-12">
       <div class="container mx-auto">
-        <FilmList v-if="!selectedFilm" @show-details="showDetails" />
-        <FilmDetails v-else :film="selectedFilm" @back="selectedFilm = null" />
+        <component
+          :is="currentComponent"
+          @show-details="showDetails"
+          @navigate="currentPage = $event"
+          @back="selectedFilm = null"
+          :film="selectedFilm"
+        />
       </div>
     </section>
   </div>
@@ -32,26 +32,40 @@
 
 <script>
 import Header from "./components/Header.vue";
-import FilmList from "./components/FilmList.vue";
+import HomeFilms from "./components/HomeFilms.vue";
+import ActeursPage from "./components/ActeursPage.vue";
+import RealisateursPage from "./components/RealisateursPage.vue";
 import FilmDetails from "./components/FilmDetails.vue";
 
 export default {
   name: "App",
   components: {
     Header,
-    FilmList,
-    FilmDetails
+    HomeFilms,
+    ActeursPage,
+    RealisateursPage,
+    FilmDetails,
   },
   data() {
     return {
-      selectedFilm: null
+      currentPage: "films", // "films" | "acteurs" | "realisateurs"
+      selectedFilm: null,
     };
+  },
+  computed: {
+    currentComponent() {
+      if (this.selectedFilm) return "FilmDetails";
+      if (this.currentPage === "films") return "HomeFilms";
+      if (this.currentPage === "acteurs") return "ActeursPage";
+      if (this.currentPage === "realisateurs") return "RealisateursPage";
+      return "HomeFilms";
+    },
   },
   methods: {
     showDetails(film) {
       this.selectedFilm = film;
-    }
-  }
+    },
+  },
 };
 </script>
 
