@@ -229,6 +229,50 @@ export async function getPersonDetails(personId) {
   return mapPersonDetails(data);
 }
 
+function mapSearchResult(result) {
+  if (!result || !result.media_type) {
+    return null;
+  }
+
+  if (result.media_type === 'movie') {
+    const year = result.release_date ? result.release_date.slice(0, 4) : '';
+    return {
+      id: result.id,
+      type: 'movie',
+      title: result.title || result.original_title || 'Titre inconnu',
+      subtitle: year ? `Film · ${year}` : 'Film',
+      image: buildPosterUrl(result.poster_path),
+    };
+  }
+
+  if (result.media_type === 'person') {
+    const department = result.known_for_department ? result.known_for_department : '';
+    return {
+      id: result.id,
+      type: 'person',
+      title: result.name || 'Nom inconnu',
+      subtitle: department ? `Personne · ${department}` : 'Personne',
+      image: buildProfileUrl(result.profile_path),
+    };
+  }
+
+  return null;
+}
+
+export async function searchMulti(query, { page = 1 } = {}) {
+  const data = await fetchFromTMDB('/search/multi', {
+    query,
+    page,
+    include_adult: false,
+  });
+
+  return Array.isArray(data.results)
+    ? data.results
+        .map(mapSearchResult)
+        .filter(Boolean)
+    : [];
+}
+
 export {
   mapMovieSummary,
   mapMovieDetails,
@@ -236,4 +280,5 @@ export {
   buildProfileUrl,
   mapPersonSummary,
   mapPersonDetails,
+  mapSearchResult,
 };

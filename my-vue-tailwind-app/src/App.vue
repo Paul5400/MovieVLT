@@ -32,11 +32,17 @@
           <a href="#" @click.prevent="currentPage = 'realisateurs'" class="text-sm font-semibold text-white">Réalisateurs</a>
         </div>
         <div class="hidden lg:flex lg:flex-1 lg:justify-end">
-          <!-- Barre de recherche moderne -->
-          <div class="relative">
+          <!-- Barre de recherche globale -->
+          <div class="relative w-full max-w-xs">
             <input
+              v-model="globalSearchQuery"
+              @input="onGlobalSearchInput"
+              @focus="openSearchDropdown"
+              @keydown.enter.prevent="performGlobalSearch"
+              @keydown.esc.stop.prevent="resetSearch"
+              @blur="scheduleCloseDropdown"
               type="text"
-              placeholder="Search..."
+              placeholder="Rechercher un film, un acteur, un réalisateur..."
               class="peer w-full rounded-full border border-gray-300 bg-white py-2 pl-4 pr-10 text-sm text-gray-700 shadow-sm placeholder-gray-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
             <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
@@ -48,6 +54,59 @@
               >
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" />
               </svg>
+            </div>
+            <div
+              v-if="searchDropdownOpen"
+              class="absolute right-0 mt-2 w-full rounded-xl border border-gray-200 bg-white py-2 shadow-2xl"
+              @mousedown.prevent
+            >
+              <div v-if="globalSearchLoading" class="px-4 py-2 text-sm text-gray-500">
+                Recherche en cours...
+              </div>
+              <div v-else-if="globalSearchError" class="px-4 py-2 text-sm text-red-500">
+                {{ globalSearchError }}
+              </div>
+              <template v-else>
+                <div
+                  v-if="!globalSearchResults.length"
+                  class="px-4 py-2 text-sm text-gray-500"
+                >
+                  Aucun résultat trouvé.
+                </div>
+                <ul v-else class="max-h-72 overflow-y-auto">
+                  <li
+                    v-for="result in globalSearchResults"
+                    :key="`${result.type}-${result.id}`"
+                  >
+                    <button
+                      class="w-full flex items-center gap-3 px-4 py-2 text-left hover:bg-gray-100 transition"
+                      @mousedown.prevent="selectSearchResult(result)"
+                    >
+                      <img
+                        v-if="result.image"
+                        :src="result.image"
+                        :alt="result.title"
+                        class="h-12 w-8 object-cover rounded"
+                      />
+                      <div
+                        v-else
+                        class="h-12 w-8 flex items-center justify-center rounded bg-gray-200 text-[10px] font-semibold uppercase text-gray-500"
+                      >
+                        {{ result.type === 'movie' ? 'Film' : 'Pers.' }}
+                      </div>
+                      <div class="flex-1">
+                        <p class="text-sm font-semibold text-gray-900">{{ result.title }}</p>
+                        <p class="text-xs text-gray-500">{{ result.subtitle }}</p>
+                      </div>
+                      <span
+                        class="text-[10px] uppercase tracking-wide text-indigo-500 font-semibold"
+                      >
+                        {{ result.type === 'movie' ? 'Film' : 'Personne' }}
+                      </span>
+                    </button>
+                  </li>
+                </ul>
+              </template>
             </div>
           </div>
         </div>
@@ -84,8 +143,9 @@
           :is="currentComponent"
           @show-details="showDetails"
           :film="selectedFilm"
+          :person="selectedPerson"
           @navigate="currentPage = $event"
-          @back="selectedFilm = null"
+          @back="handleBack"
         />
       </div>
     </section>
@@ -97,6 +157,12 @@ import HomeFilms from "./components/HomeFilms.vue";
 import ActeursPage from "./components/ActeursPage.vue";
 import RealisateursPage from "./components/RealisateursPage.vue";
 import FilmDetails from "./components/FilmDetails.vue";
+import PersonDetails from "./components/PersonDetails.vue";
+import {
+  searchMulti,
+  getMovieDetails as fetchMovieDetails,
+  getPersonDetails as fetchPersonDetails,
+} from "./services/tmdb";
 
 export default {
   name: "App",
@@ -105,16 +171,26 @@ export default {
     ActeursPage,
     RealisateursPage,
     FilmDetails,
+    PersonDetails,
   },
   data() {
     return {
       currentPage: "films", // "films" | "acteurs" | "realisateurs"
       selectedFilm: null,
+      selectedPerson: null,
+      globalSearchQuery: "",
+      globalSearchResults: [],
+      globalSearchLoading: false,
+      globalSearchError: "",
+      searchDropdownOpen: false,
+      searchDebounceTimer: null,
+      searchBlurTimer: null,
     };
   },
   computed: {
     currentComponent() {
       if (this.selectedFilm) return "FilmDetails";
+      if (this.selectedPerson) return "PersonDetails";
       if (this.currentPage === "films") return "HomeFilms";
       if (this.currentPage === "acteurs") return "ActeursPage";
       if (this.currentPage === "realisateurs") return "RealisateursPage";
@@ -124,7 +200,126 @@ export default {
   methods: {
     showDetails(film) {
       this.selectedFilm = film;
+      this.selectedPerson = null;
     },
+    handleBack() {
+      if (this.selectedFilm) {
+        this.selectedFilm = null;
+      } else if (this.selectedPerson) {
+        this.selectedPerson = null;
+      }
+    },
+    onGlobalSearchInput() {
+      if (this.searchDebounceTimer) {
+        clearTimeout(this.searchDebounceTimer);
+      }
+      const query = this.globalSearchQuery.trim();
+      if (!query) {
+        this.globalSearchResults = [];
+        this.globalSearchError = "";
+        this.searchDropdownOpen = false;
+        return;
+      }
+      this.searchDebounceTimer = setTimeout(() => {
+        this.performGlobalSearch();
+      }, 300);
+    },
+    async performGlobalSearch() {
+      const query = this.globalSearchQuery.trim();
+      if (!query) {
+        this.globalSearchResults = [];
+        this.globalSearchError = "";
+        this.searchDropdownOpen = false;
+        return;
+      }
+      this.globalSearchLoading = true;
+      this.globalSearchError = "";
+      this.searchDropdownOpen = true;
+      try {
+        const results = await searchMulti(query, { page: 1 });
+        this.globalSearchResults = results.slice(0, 8);
+        if (!this.globalSearchResults.length) {
+          this.globalSearchError = "Aucun résultat trouvé.";
+        }
+      } catch (error) {
+        console.error("Erreur lors de la recherche globale:", error);
+        this.globalSearchError = error.message || "Erreur lors de la recherche.";
+        this.globalSearchResults = [];
+      } finally {
+        this.globalSearchLoading = false;
+      }
+    },
+    async selectSearchResult(result) {
+      this.cancelCloseDropdown();
+      this.searchDropdownOpen = false;
+      if (!result) {
+        return;
+      }
+      this.globalSearchQuery = result.title;
+      try {
+        if (result.type === "movie") {
+          await this.openMovie(result.id);
+        } else if (result.type === "person") {
+          await this.openPerson(result.id);
+        }
+      } catch (error) {
+        console.error("Erreur lors de la sélection du résultat:", error);
+        this.globalSearchError = error.message || "Erreur lors de la récupération du résultat.";
+      }
+    },
+    async openMovie(id) {
+      this.globalSearchLoading = true;
+      try {
+        const details = await fetchMovieDetails(id);
+        this.selectedFilm = details;
+        this.selectedPerson = null;
+        this.currentPage = "films";
+      } finally {
+        this.globalSearchLoading = false;
+      }
+    },
+    async openPerson(id) {
+      this.globalSearchLoading = true;
+      try {
+        const details = await fetchPersonDetails(id);
+        this.selectedPerson = details;
+        this.selectedFilm = null;
+      } finally {
+        this.globalSearchLoading = false;
+      }
+    },
+    openSearchDropdown() {
+      this.cancelCloseDropdown();
+      if (this.globalSearchResults.length || this.globalSearchError) {
+        this.searchDropdownOpen = true;
+      }
+    },
+    scheduleCloseDropdown() {
+      this.cancelCloseDropdown();
+      this.searchBlurTimer = setTimeout(() => {
+        this.searchDropdownOpen = false;
+      }, 200);
+    },
+    cancelCloseDropdown() {
+      if (this.searchBlurTimer) {
+        clearTimeout(this.searchBlurTimer);
+        this.searchBlurTimer = null;
+      }
+    },
+    resetSearch() {
+      this.globalSearchQuery = "";
+      this.globalSearchResults = [];
+      this.globalSearchError = "";
+      this.searchDropdownOpen = false;
+    },
+  },
+  beforeUnmount() {
+    if (this.searchDebounceTimer) {
+      clearTimeout(this.searchDebounceTimer);
+    }
+    if (this.searchBlurTimer) {
+      clearTimeout(this.searchBlurTimer);
+    }
   },
 };
 </script>
