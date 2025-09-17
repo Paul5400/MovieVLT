@@ -10,7 +10,7 @@
     >
       <div
         v-for="(movie, index) in movies.slice(0, 10)"
-        :key="movie.imdbID || index"
+        :key="movie.tmdbID || movie.imdbID || index"
         class="bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:shadow-2xl transition-shadow flex flex-col"
       >
         <img
@@ -27,7 +27,7 @@
         </div>
         <div class="p-4">
           <button
-            @click="getMovieDetails(movie.imdbID)"
+            @click="getMovieDetails(movie.tmdbID)"
             class="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 rounded"
           >
             Voir les détails
@@ -39,16 +39,17 @@
 </template>
 
 <script>
+import { discoverRecentMovies, getMovieDetails as fetchMovieDetails } from "../services/tmdb";
+
 export default {
   name: "HomeFilms",
   data() {
-    const currentYear = new Date().getFullYear().toString();
+    const currentYear = new Date().getFullYear();
     return {
       movies: [],
       loading: false,
       error: null,
-      apiKey: "321b3ca4", // Votre clé API OMDb
-      searchQuery: currentYear,
+      currentYear,
     };
   },
   mounted() {
@@ -63,19 +64,8 @@ export default {
       this.loading = true;
       this.error = null;
       try {
-        const response = await fetch(
-          `https://www.omdbapi.com/?apikey=${this.apiKey}&s=${encodeURIComponent(
-            this.searchQuery
-          )}&y=${this.searchQuery}`
-        );
-        if (!response.ok) {
-          throw new Error(`Erreur HTTP : ${response.status}`);
-        }
-        const data = await response.json();
-        if (data.Response === "False") {
-          throw new Error(data.Error);
-        }
-        this.movies = data.Search;
+        const movies = await discoverRecentMovies(this.currentYear);
+        this.movies = movies;
       } catch (err) {
         console.error("Erreur lors de la récupération des films :", err);
         this.error = err.message;
@@ -83,19 +73,16 @@ export default {
         this.loading = false;
       }
     },
-    async getMovieDetails(imdbID) {
-      // Récupère les détails complets du film et émet l'événement pour l'affichage.
+    async getMovieDetails(tmdbID) {
+      if (!tmdbID) {
+        this.error = "Identifiant TMDB manquant pour ce film.";
+        return;
+      }
       this.loading = true;
       this.error = null;
       try {
-        const response = await fetch(
-          `https://www.omdbapi.com/?apikey=${this.apiKey}&i=${imdbID}&plot=full`
-        );
-        if (!response.ok)
-          throw new Error(`Erreur HTTP : ${response.status}`);
-        const data = await response.json();
-        if (data.Response === "False") throw new Error(data.Error);
-        this.$emit("show-details", data);
+        const details = await fetchMovieDetails(tmdbID);
+        this.$emit("show-details", details);
       } catch (err) {
         console.error("Erreur lors du chargement des détails :", err);
         this.error = err.message;

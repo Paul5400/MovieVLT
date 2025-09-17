@@ -6,6 +6,7 @@
       <p><span class="font-semibold">Année :</span> {{ fixYear(film.Year) }}</p>
       <p><span class="font-semibold">Genre :</span> {{ film.Genre }}</p>
       <p><span class="font-semibold">Réalisateur :</span> {{ film.Director }}</p>
+      <p v-if="film.Actors"><span class="font-semibold">Acteurs :</span> {{ film.Actors }}</p>
       <p class="mt-4"><span class="font-semibold">Synopsis :</span> {{ film.Plot }}</p>
       <img
         v-if="film.Poster !== 'N/A'"
