@@ -88,15 +88,20 @@ function mapMovieDetails(movie) {
   };
 }
 
-export async function discoverRecentMovies(year = new Date().getFullYear()) {
+export async function discoverRecentMovies({ year = new Date().getFullYear(), page = 1 } = {}) {
   const data = await fetchFromTMDB('/discover/movie', {
     sort_by: 'popularity.desc',
     primary_release_year: year,
     include_adult: false,
-    page: 1,
+    page,
   });
 
-  return Array.isArray(data.results) ? data.results.map(mapMovieSummary) : [];
+  return {
+    results: Array.isArray(data.results) ? data.results.map(mapMovieSummary) : [],
+    page: data.page || page,
+    totalPages: data.total_pages || 1,
+    totalResults: data.total_results || 0,
+  };
 }
 
 export async function searchMovies(query, { page = 1, year } = {}) {
@@ -110,6 +115,8 @@ export async function searchMovies(query, { page = 1, year } = {}) {
   return {
     results: Array.isArray(data.results) ? data.results.map(mapMovieSummary) : [],
     totalResults: data.total_results || 0,
+    totalPages: data.total_pages || 0,
+    page: data.page || page,
   };
 }
 

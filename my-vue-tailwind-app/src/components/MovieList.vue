@@ -37,7 +37,8 @@ export default {
       this.loading = true;
       this.error = null;
       try {
-        this.movies = await discoverRecentMovies();
+        const { results } = await discoverRecentMovies();
+        this.movies = results;
       } catch (error) {
         console.error("Erreur lors du chargement des films:", error);
         this.error = error.message;

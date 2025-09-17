@@ -1,7 +1,8 @@
 <!-- filepath: /home/paul/Documents/Web/S5/MovieVLT/my-vue-tailwind-app/src/App.vue -->
 <template>
-  <div class="relative min-h-screen bg-gradient-to-br from-gray-800 via-gray-700/40 to-gray-900">
-    
+  <div class="relative min-h-screen">
+    <div class="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-br from-gray-900/80 via-gray-800/40 to-gray-900/80"></div>
+
     <!-- Header -->
     <header class="absolute inset-x-0 top-0 z-50">
       <nav aria-label="Global" class="flex items-center justify-between px-6 py-4 lg:px-8">
