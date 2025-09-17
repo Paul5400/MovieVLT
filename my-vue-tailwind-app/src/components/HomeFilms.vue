@@ -1,7 +1,29 @@
 <!-- filepath: /home/paul/Documents/Web/S5/MovieVLT/my-vue-tailwind-app/src/components/HomeFilms.vue -->
 <template>
-  <div class="p-4 text-white">
-    <h2 class="text-3xl font-bold mb-6 text-center">Films Récents</h2>
+  <div class="p-6 lg:p-10 text-white">
+    <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-8">
+      <div>
+        <h2 class="text-3xl font-bold">Vitrine des films</h2>
+        <p class="mt-2 text-gray-300">Découvrez les sorties de l'année ou recherchez un film précis.</p>
+      </div>
+      <div class="w-full lg:w-auto">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+          <input
+            v-model="searchInput"
+            @keyup.enter="onSearch"
+            type="text"
+            placeholder="Rechercher un film (ex: Dune Part Two)"
+            class="w-full sm:w-80 rounded-full px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+          <button
+            @click="onSearch"
+            class="inline-flex items-center justify-center rounded-full bg-indigo-500 px-5 py-2 font-semibold hover:bg-indigo-600 transition"
+          >
+            Rechercher
+          </button>
+        </div>
+      </div>
+    </div>
     <div v-if="loading" class="text-center">Chargement...</div>
     <div v-if="error" class="text-red-500 text-center">{{ error }}</div>
     <div
@@ -39,7 +61,11 @@
 </template>
 
 <script>
-import { discoverRecentMovies, getMovieDetails as fetchMovieDetails } from "../services/tmdb";
+import {
+  discoverRecentMovies,
+  searchMovies as searchMoviesByTitle,
+  getMovieDetails as fetchMovieDetails,
+} from "../services/tmdb";
 
 export default {
   name: "HomeFilms",
@@ -50,6 +76,8 @@ export default {
       loading: false,
       error: null,
       currentYear,
+      searchInput: "",
+      lastQuery: "",
     };
   },
   mounted() {
@@ -60,18 +88,35 @@ export default {
       const match = String(year).match(/\d{4}/);
       return match ? match[0] : year;
     },
-    async fetchMovies() {
+    async fetchMovies(query = "") {
+      const trimmedQuery = query.trim();
       this.loading = true;
       this.error = null;
       try {
-        const movies = await discoverRecentMovies(this.currentYear);
-        this.movies = movies;
+        if (trimmedQuery) {
+          const { results } = await searchMoviesByTitle(trimmedQuery, { page: 1 });
+          this.movies = results;
+          this.lastQuery = trimmedQuery;
+          if (!results.length) {
+            this.error = "Aucun film trouvé pour cette recherche.";
+          }
+        } else {
+          const movies = await discoverRecentMovies(this.currentYear);
+          this.movies = movies;
+          this.lastQuery = "";
+          if (!movies.length) {
+            this.error = "Aucun film récent trouvé pour le moment.";
+          }
+        }
       } catch (err) {
         console.error("Erreur lors de la récupération des films :", err);
         this.error = err.message;
       } finally {
         this.loading = false;
       }
+    },
+    onSearch() {
+      this.fetchMovies(this.searchInput);
     },
     async getMovieDetails(tmdbID) {
       if (!tmdbID) {

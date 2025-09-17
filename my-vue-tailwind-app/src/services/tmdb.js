@@ -2,6 +2,7 @@ const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY || '1bbd01570b2ef7ab04652
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p';
 const DEFAULT_POSTER_SIZE = 'w500';
+const DEFAULT_PROFILE_SIZE = 'w500';
 const DEFAULT_LANGUAGE = 'fr-FR';
 
 function buildUrl(path, params = {}) {
@@ -45,6 +46,13 @@ function buildPosterUrl(path) {
     return 'N/A';
   }
   return `${TMDB_IMAGE_BASE_URL}/${DEFAULT_POSTER_SIZE}${path}`;
+}
+
+function buildProfileUrl(path) {
+  if (!path) {
+    return null;
+  }
+  return `${TMDB_IMAGE_BASE_URL}/${DEFAULT_PROFILE_SIZE}${path}`;
 }
 
 function mapMovieSummary(movie) {
@@ -127,4 +135,105 @@ export async function getMovieCredits(tmdbId) {
   return { actors, director };
 }
 
-export { mapMovieSummary, mapMovieDetails, buildPosterUrl };
+function computeAge(birthday, deathday) {
+  if (!birthday) {
+    return null;
+  }
+  const birthDate = new Date(birthday);
+  const endDate = deathday ? new Date(deathday) : new Date();
+  if (Number.isNaN(birthDate.getTime()) || Number.isNaN(endDate.getTime())) {
+    return null;
+  }
+  let age = endDate.getFullYear() - birthDate.getFullYear();
+  const beforeBirthday =
+    endDate.getMonth() < birthDate.getMonth() ||
+    (endDate.getMonth() === birthDate.getMonth() && endDate.getDate() < birthDate.getDate());
+  if (beforeBirthday) {
+    age -= 1;
+  }
+  return age;
+}
+
+function mapPersonSummary(person) {
+  return {
+    id: person.id,
+    name: person.name,
+    profile: buildProfileUrl(person.profile_path),
+    knownForDepartment: person.known_for_department || '',
+  };
+}
+
+function mapCreditItem(credit, extra = {}) {
+  const title =
+    credit.title ||
+    credit.original_title ||
+    credit.name ||
+    credit.original_name ||
+    'Titre inconnu';
+  const dateSource = credit.release_date || credit.first_air_date || '';
+  return {
+    tmdbID: credit.id,
+    Title: title,
+    Poster: buildPosterUrl(credit.poster_path),
+    Year: dateSource ? dateSource.slice(0, 4) : 'N/A',
+    MediaType: credit.media_type || '',
+    ...extra,
+  };
+}
+
+function mapPersonDetails(person) {
+  const summary = mapPersonSummary(person);
+  const movieCredits = Array.isArray(person.combined_credits?.cast)
+    ? person.combined_credits.cast
+        .filter((credit) => credit.media_type === 'movie')
+        .sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
+        .slice(0, 10)
+        .map((credit) => mapCreditItem(credit, { Character: credit.character || '' }))
+    : [];
+
+  const directingCredits = Array.isArray(person.combined_credits?.crew)
+    ? person.combined_credits.crew
+        .filter((credit) => credit.job === 'Director')
+        .sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
+        .slice(0, 10)
+        .map((credit) => mapCreditItem(credit, { Job: credit.job || '' }))
+    : [];
+
+  return {
+    ...summary,
+    biography: person.biography || 'Aucune biographie disponible.',
+    birthday: person.birthday || '',
+    deathday: person.deathday || '',
+    placeOfBirth: person.place_of_birth || '',
+    age: computeAge(person.birthday, person.deathday),
+    knownFor: movieCredits,
+    knownForDirecting: directingCredits,
+  };
+}
+
+export async function searchPeople(query, { page = 1 } = {}) {
+  const data = await fetchFromTMDB('/search/person', {
+    query,
+    page,
+    include_adult: false,
+  });
+
+  return Array.isArray(data.results) ? data.results.map(mapPersonSummary) : [];
+}
+
+export async function getPersonDetails(personId) {
+  const data = await fetchFromTMDB(`/person/${personId}`, {
+    append_to_response: 'combined_credits',
+  });
+
+  return mapPersonDetails(data);
+}
+
+export {
+  mapMovieSummary,
+  mapMovieDetails,
+  buildPosterUrl,
+  buildProfileUrl,
+  mapPersonSummary,
+  mapPersonDetails,
+};
