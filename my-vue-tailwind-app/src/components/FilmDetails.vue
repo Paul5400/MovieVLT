@@ -6,7 +6,31 @@
       <p><span class="font-semibold">Année :</span> {{ fixYear(film.Year) }}</p>
       <p><span class="font-semibold">Genre :</span> {{ film.Genre }}</p>
       <p><span class="font-semibold">Réalisateur :</span> {{ film.Director }}</p>
-      <p v-if="film.Actors"><span class="font-semibold">Acteurs :</span> {{ film.Actors }}</p>
+      
+      <!-- Affichage des acteurs avec noms cliquables -->
+      <div v-if="film.CastMembers && film.CastMembers.length" class="mt-2">
+        <span class="font-semibold">Acteurs principaux :</span>
+        <div class="mt-2 flex flex-wrap gap-2">
+          <button
+            v-for="(actor, index) in film.CastMembers"
+            :key="actor.id"
+            @click="onActorClick(actor.id)"
+            class="inline-flex items-center gap-2 bg-gray-700 hover:bg-indigo-600 px-3 py-1 rounded-full text-sm transition-colors"
+          >
+            <img
+              v-if="actor.profile"
+              :src="actor.profile"
+              :alt="actor.name"
+              class="w-6 h-6 rounded-full object-cover"
+            />
+            <span>{{ actor.name }}</span>
+            <span v-if="actor.character" class="text-gray-300 text-xs">({{ actor.character }})</span>
+          </button>
+        </div>
+      </div>
+      <!-- Fallback pour l'ancien format si CastMembers n'est pas disponible -->
+      <p v-else-if="film.Actors"><span class="font-semibold">Acteurs :</span> {{ film.Actors }}</p>
+      
       <p class="mt-4"><span class="font-semibold">Synopsis :</span> {{ film.Plot }}</p>
       <img
         v-if="film.Poster !== 'N/A'"
@@ -37,6 +61,10 @@ export default {
     fixYear(year) {
       const match = String(year).match(/\d{4}/);
       return match ? match[0] : year;
+    },
+    onActorClick(actorId) {
+      // Émettre un événement pour naviguer vers les détails de l'acteur
+      this.$emit('show-actor', actorId);
     },
   },
 };

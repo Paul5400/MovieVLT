@@ -78,6 +78,16 @@ function mapMovieDetails(movie) {
     ? movie.credits.cast.slice(0, 5).map((actor) => actor.name).join(', ')
     : '';
 
+  // Conserver les acteurs avec leurs IDs pour les rendre cliquables
+  const castMembers = Array.isArray(movie.credits?.cast)
+    ? movie.credits.cast.slice(0, 5).map((actor) => ({
+        id: actor.id,
+        name: actor.name,
+        character: actor.character || '',
+        profile: buildProfileUrl(actor.profile_path)
+      }))
+    : [];
+
   return {
     ...summary,
     Genre: genres,
@@ -85,6 +95,7 @@ function mapMovieDetails(movie) {
     Plot: movie.overview || 'Synopsis non disponible.',
     Runtime: movie.runtime || null,
     Actors: actors,
+    CastMembers: castMembers, // Nouvelle propriété avec les détails complets
   };
 }
 

@@ -143,6 +143,7 @@
         <component
           :is="currentComponent"
           @show-details="showDetails"
+          @show-actor="showActorDetails"
           :film="selectedFilm"
           :person="selectedPerson"
           @navigate="currentPage = $event"
@@ -202,6 +203,15 @@ export default {
     showDetails(film) {
       this.selectedFilm = film;
       this.selectedPerson = null;
+    },
+    async showActorDetails(actorId) {
+      try {
+        const details = await fetchPersonDetails(actorId);
+        this.selectedPerson = details;
+        this.selectedFilm = null;
+      } catch (error) {
+        console.error("Erreur lors de la récupération des détails de l'acteur:", error);
+      }
     },
     handleBack() {
       if (this.selectedFilm) {

@@ -31,7 +31,7 @@
       class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
     >
       <div
-        v-for="(movie, index) in visibleMovies"
+        v-for="(movie, index) in movies.slice(0, 10)"
         :key="movie.tmdbID || movie.imdbID || index"
         class="bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:shadow-2xl transition-shadow flex flex-col"
       >
@@ -57,18 +57,6 @@
         </div>
       </div>
     </div>
-    <div
-      v-if="movies && movies.length && showLoadMore"
-      class="mt-8 flex justify-center"
-    >
-      <button
-        @click="loadMore"
-        :disabled="isLoadingMore"
-        class="rounded-full bg-indigo-500 px-6 py-2 text-sm font-semibold text-white transition disabled:opacity-60 disabled:cursor-not-allowed hover:bg-indigo-600"
-      >
-        {{ isLoadingMore ? 'Chargement...' : 'Voir plus' }}
-      </button>
-    </div>
   </div>
 </template>
 
@@ -90,26 +78,10 @@ export default {
       currentYear,
       searchInput: "",
       lastQuery: "",
-      visibleCount: 10,
-      currentPage: 1,
-      totalPages: 1,
-      lastQueryType: "discover",
-      isLoadingMore: false,
     };
   },
   mounted() {
     this.fetchMovies();
-  },
-  computed: {
-    visibleMovies() {
-      return this.movies.slice(0, this.visibleCount);
-    },
-    showLoadMore() {
-      if (!this.movies.length) {
-        return false;
-      }
-      return this.movies.length > this.visibleCount || this.currentPage < this.totalPages;
-    },
   },
   methods: {
     fixYear(year) {
@@ -122,25 +94,17 @@ export default {
       this.error = null;
       try {
         if (trimmedQuery) {
-          const response = await searchMoviesByTitle(trimmedQuery, { page: 1 });
-          this.movies = response.results;
-          this.visibleCount = 10;
+          const { results } = await searchMoviesByTitle(trimmedQuery, { page: 1 });
+          this.movies = results;
           this.lastQuery = trimmedQuery;
-          this.currentPage = response.page || 1;
-          this.totalPages = response.totalPages || 1;
-          this.lastQueryType = "search";
-          if (!response.results.length) {
+          if (!results.length) {
             this.error = "Aucun film trouvé pour cette recherche.";
           }
         } else {
-          const response = await discoverRecentMovies({ year: this.currentYear, page: 1 });
-          this.movies = response.results;
-          this.visibleCount = 10;
+          const movies = await discoverRecentMovies(this.currentYear);
+          this.movies = movies;
           this.lastQuery = "";
-          this.currentPage = response.page || 1;
-          this.totalPages = response.totalPages || 1;
-          this.lastQueryType = "discover";
-          if (!response.results.length) {
+          if (!movies.length) {
             this.error = "Aucun film récent trouvé pour le moment.";
           }
         }
@@ -149,56 +113,10 @@ export default {
         this.error = err.message;
       } finally {
         this.loading = false;
-        this.isLoadingMore = false;
       }
     },
     onSearch() {
       this.fetchMovies(this.searchInput);
-    },
-    async loadMore() {
-      if (this.isLoadingMore) {
-        return;
-      }
-      if (this.visibleCount < this.movies.length) {
-        this.visibleCount = Math.min(this.visibleCount + 10, this.movies.length);
-        return;
-      }
-      if (this.currentPage >= this.totalPages) {
-        return;
-      }
-      const loaded = await this.fetchNextPage();
-      if (loaded) {
-        this.visibleCount = Math.min(this.visibleCount + 10, this.movies.length);
-      }
-    },
-    async fetchNextPage() {
-      const nextPage = this.currentPage + 1;
-      if (nextPage > this.totalPages) {
-        return false;
-      }
-      this.isLoadingMore = true;
-      this.error = null;
-      try {
-        let response;
-        if (this.lastQueryType === "search" && this.lastQuery) {
-          response = await searchMoviesByTitle(this.lastQuery, { page: nextPage });
-        } else {
-          response = await discoverRecentMovies({ year: this.currentYear, page: nextPage });
-        }
-        const newResults = response.results || [];
-        if (newResults.length) {
-          this.movies = this.movies.concat(newResults);
-        }
-        this.currentPage = response.page || nextPage;
-        this.totalPages = response.totalPages || this.totalPages;
-        return newResults.length > 0;
-      } catch (err) {
-        console.error("Erreur lors du chargement supplémentaire :", err);
-        this.error = err.message;
-        return false;
-      } finally {
-        this.isLoadingMore = false;
-      }
     },
     async getMovieDetails(tmdbID) {
       if (!tmdbID) {
@@ -222,5 +140,4 @@ export default {
 </script>
 
 <style scoped>
-/* Ajoutez vos styles complémentaires si besoin */
 </style>
