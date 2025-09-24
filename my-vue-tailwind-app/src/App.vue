@@ -10,9 +10,9 @@
           <a href="#" @click.prevent="currentPage = 'films'" class="-m-1.5 p-1.5">
             <span class="sr-only">MovieVLT</span>
             <img
-              src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500"
+              src="/img/freepik-creative-cinema-production-logo-20250924143146QnTF-removebg-preview.webp"
               alt="MovieVLT Logo"
-              class="h-8 w-auto"
+              class="h-16 w-auto"
             />
           </a>
         </div>
