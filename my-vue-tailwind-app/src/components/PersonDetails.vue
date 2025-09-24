@@ -58,7 +58,8 @@
               <article
                 v-for="movie in person.knownFor"
                 :key="movie.tmdbID"
-                class="group bg-gray-800/60 rounded-xl overflow-hidden border border-gray-700 hover:border-indigo-400 transition"
+                class="group bg-gray-800/60 rounded-xl overflow-hidden border border-gray-700 hover:border-indigo-400 hover:shadow-lg transition cursor-pointer"
+                @click="onMovieClick(movie.tmdbID)"
               >
                 <img
                   v-if="movie.Poster !== 'N/A'"
@@ -82,7 +83,8 @@
               <article
                 v-for="movie in person.knownForDirecting"
                 :key="movie.tmdbID"
-                class="group bg-gray-800/60 rounded-xl overflow-hidden border border-gray-700 hover:border-indigo-400 transition"
+                class="group bg-gray-800/60 rounded-xl overflow-hidden border border-gray-700 hover:border-indigo-400 hover:shadow-lg transition cursor-pointer"
+                @click="onMovieClick(movie.tmdbID)"
               >
                 <img
                   v-if="movie.Poster !== 'N/A'"
@@ -129,6 +131,10 @@ export default {
       } catch (error) {
         return dateString;
       }
+    },
+    onMovieClick(movieId) {
+      // Émettre un événement pour naviguer vers les détails du film
+      this.$emit('show-movie', movieId);
     },
   },
 };

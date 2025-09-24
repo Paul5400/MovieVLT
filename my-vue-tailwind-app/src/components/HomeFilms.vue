@@ -101,10 +101,10 @@ export default {
             this.error = "Aucun film trouvé pour cette recherche.";
           }
         } else {
-          const movies = await discoverRecentMovies(this.currentYear);
-          this.movies = movies;
+          const { results } = await discoverRecentMovies({ year: this.currentYear });
+          this.movies = results;
           this.lastQuery = "";
-          if (!movies.length) {
+          if (!results.length) {
             this.error = "Aucun film récent trouvé pour le moment.";
           }
         }

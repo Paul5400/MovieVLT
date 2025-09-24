@@ -144,6 +144,7 @@
           :is="currentComponent"
           @show-details="showDetails"
           @show-actor="showActorDetails"
+          @show-movie="showMovieDetails"
           :film="selectedFilm"
           :person="selectedPerson"
           @navigate="currentPage = $event"
@@ -211,6 +212,15 @@ export default {
         this.selectedFilm = null;
       } catch (error) {
         console.error("Erreur lors de la récupération des détails de l'acteur:", error);
+      }
+    },
+    async showMovieDetails(movieId) {
+      try {
+        const details = await fetchMovieDetails(movieId);
+        this.selectedFilm = details;
+        this.selectedPerson = null;
+      } catch (error) {
+        console.error("Erreur lors de la récupération des détails du film:", error);
       }
     },
     handleBack() {

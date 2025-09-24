@@ -96,7 +96,8 @@
             <article
               v-for="movie in selectedDirector.knownForDirecting"
               :key="movie.tmdbID"
-              class="group bg-gray-800/70 rounded-xl overflow-hidden shadow border border-gray-700 hover:border-indigo-400 transition"
+              class="group bg-gray-800/70 rounded-xl overflow-hidden shadow border border-gray-700 hover:border-indigo-400 hover:shadow-lg transition cursor-pointer"
+              @click="onMovieClick(movie.tmdbID)"
             >
               <img
                 v-if="movie.Poster !== 'N/A'"
@@ -197,6 +198,10 @@ export default {
       } catch (error) {
         return dateString;
       }
+    },
+    onMovieClick(movieId) {
+      // Émettre un événement pour naviguer vers les détails du film
+      this.$emit('show-movie', movieId);
     },
   },
 };
