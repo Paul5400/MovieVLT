@@ -24,38 +24,29 @@
         </div>
       </div>
     </div>
-    <div v-if="loading" class="text-center">Chargement...</div>
+    <div v-if="loading && !movies.length" class="text-center">Chargement...</div>
     <div v-if="error" class="text-red-500 text-center">{{ error }}</div>
     <div
-      v-if="movies && movies.length"
-      class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+      v-else-if="movies && movies.length"
+      class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6"
     >
-      <div
-        v-for="(movie, index) in movies.slice(0, 10)"
+      <FilmCard
+        v-for="(movie, index) in displayedMovies"
         :key="movie.tmdbID || movie.imdbID || index"
-        class="bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:shadow-2xl transition-shadow flex flex-col"
+        :movie="movie"
+        @show-movie="onMovieClick"
+      />
+    </div>
+    <div v-else class="text-center text-gray-400">Aucun film à afficher.</div>
+
+    <!-- Bouton "Voir plus" -->
+    <div v-if="canLoadMore" class="mt-10 text-center">
+      <button
+        @click="loadMoreMovies"
+        class="rounded-full bg-indigo-500 px-8 py-3 font-semibold text-white hover:bg-indigo-600 transition-transform hover:scale-105"
       >
-        <img
-          v-if="movie.Poster !== 'N/A'"
-          :src="movie.Poster"
-          alt="Affiche du film"
-          class="w-full h-48 object-cover"
-        />
-        <div class="p-4 flex-grow">
-          <h3 class="text-xl font-semibold mb-2">{{ movie.Title }}</h3>
-          <p class="text-sm text-gray-300">
-            Année : {{ fixYear(movie.Year) }}
-          </p>
-        </div>
-        <div class="p-4">
-          <button
-            @click="getMovieDetails(movie.tmdbID)"
-            class="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 rounded"
-          >
-            Voir les détails
-          </button>
-        </div>
-      </div>
+        Voir plus
+      </button>
     </div>
   </div>
 </template>
@@ -64,11 +55,14 @@
 import {
   discoverRecentMovies,
   searchMovies as searchMoviesByTitle,
-  getMovieDetails as fetchMovieDetails,
 } from "../services/tmdb";
+import FilmCard from "./FilmCard.vue";
 
 export default {
   name: "HomeFilms",
+  components: {
+    FilmCard,
+  },
   data() {
     const currentYear = new Date().getFullYear();
     return {
@@ -78,15 +72,24 @@ export default {
       currentYear,
       searchInput: "",
       lastQuery: "",
+      displayLimit: 10,
+      moviesPerPage: 10,
     };
+  },
+  computed: {
+    displayedMovies() {
+      return this.movies.slice(0, this.displayLimit);
+    },
+    canLoadMore() {
+      return this.movies.length > this.displayLimit;
+    },
   },
   mounted() {
     this.fetchMovies();
   },
   methods: {
-    fixYear(year) {
-      const match = String(year).match(/\d{4}/);
-      return match ? match[0] : year;
+    resetDisplayLimit() {
+      this.displayLimit = 10;
     },
     async fetchMovies(query = "") {
       const trimmedQuery = query.trim();
@@ -96,6 +99,7 @@ export default {
         if (trimmedQuery) {
           const { results } = await searchMoviesByTitle(trimmedQuery, { page: 1 });
           this.movies = results;
+          this.resetDisplayLimit();
           this.lastQuery = trimmedQuery;
           if (!results.length) {
             this.error = "Aucun film trouvé pour cette recherche.";
@@ -103,6 +107,7 @@ export default {
         } else {
           const { results } = await discoverRecentMovies({ year: this.currentYear });
           this.movies = results;
+          this.resetDisplayLimit();
           this.lastQuery = "";
           if (!results.length) {
             this.error = "Aucun film récent trouvé pour le moment.";
@@ -118,22 +123,11 @@ export default {
     onSearch() {
       this.fetchMovies(this.searchInput);
     },
-    async getMovieDetails(tmdbID) {
-      if (!tmdbID) {
-        this.error = "Identifiant TMDB manquant pour ce film.";
-        return;
-      }
-      this.loading = true;
-      this.error = null;
-      try {
-        const details = await fetchMovieDetails(tmdbID);
-        this.$emit("show-details", details);
-      } catch (err) {
-        console.error("Erreur lors du chargement des détails :", err);
-        this.error = err.message;
-      } finally {
-        this.loading = false;
-      }
+    onMovieClick(movieId) {
+      this.$emit("show-movie", movieId);
+    },
+    loadMoreMovies() {
+      this.displayLimit += this.moviesPerPage;
     },
   },
 };
