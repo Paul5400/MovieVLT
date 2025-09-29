@@ -14,8 +14,7 @@
           <button
             v-for="(actor, index) in film.CastMembers"
             :key="actor.id"
-            @click="onActorClick(actor.id)"
-            class="inline-flex items-center gap-2 bg-gray-700 hover:bg-indigo-600 px-3 py-1 rounded-full text-sm transition-colors"
+            @click="onActorClick(actor.id)"            class="inline-flex items-center gap-2 bg-gray-700 hover:bg-indigo-600 px-3 py-1 rounded-full text-sm transition-all transform hover:scale-105"
           >
             <img
               v-if="actor.profile"

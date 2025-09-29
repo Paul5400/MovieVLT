@@ -58,7 +58,7 @@
               <article
                 v-for="movie in person.knownFor"
                 :key="movie.tmdbID"
-                class="group bg-gray-800/60 rounded-xl overflow-hidden border border-gray-700 hover:border-indigo-400 hover:shadow-lg transition cursor-pointer"
+                class="group bg-gray-800/60 rounded-xl overflow-hidden border border-gray-700 hover:border-indigo-400 hover:shadow-lg transition-all transform hover:scale-105 cursor-pointer"
                 @click="onMovieClick(movie.tmdbID)"
               >
                 <img
@@ -83,7 +83,7 @@
               <article
                 v-for="movie in person.knownForDirecting"
                 :key="movie.tmdbID"
-                class="group bg-gray-800/60 rounded-xl overflow-hidden border border-gray-700 hover:border-indigo-400 hover:shadow-lg transition cursor-pointer"
+                class="group bg-gray-800/60 rounded-xl overflow-hidden border border-gray-700 hover:border-indigo-400 hover:shadow-lg transition-all transform hover:scale-105 cursor-pointer"
                 @click="onMovieClick(movie.tmdbID)"
               >
                 <img

@@ -7,7 +7,7 @@
     <header class="absolute inset-x-0 top-0 z-50">
       <nav aria-label="Global" class="flex items-center justify-between px-6 py-4 lg:px-8">
         <div class="flex lg:flex-1">
-          <a href="#" @click.prevent="currentPage = 'films'" class="-m-1.5 p-1.5">
+          <a href="#" @click.prevent="navigateTo('films')" class="-m-1.5 p-1.5">
             <span class="sr-only">MovieVLT</span>
             <img
               src="/img/freepik-creative-cinema-production-logo-20250924143146QnTF-removebg-preview.webp"
@@ -28,9 +28,9 @@
           </button>
         </div>
         <div class="hidden lg:flex lg:gap-x-12">
-          <a href="#" @click.prevent="currentPage = 'films'" class="text-sm font-semibold text-white">Films</a>
-          <a href="#" @click.prevent="currentPage = 'acteurs'" class="text-sm font-semibold text-white">Acteurs</a>
-          <a href="#" @click.prevent="currentPage = 'realisateurs'" class="text-sm font-semibold text-white">Réalisateurs</a>
+          <a href="#" @click.prevent="navigateTo('films')" class="text-sm font-semibold text-white">Films</a>
+          <a href="#" @click.prevent="navigateTo('acteurs')" class="text-sm font-semibold text-white">Acteurs</a>
+          <a href="#" @click.prevent="navigateTo('realisateurs')" class="text-sm font-semibold text-white">Réalisateurs</a>
         </div>
         <div class="hidden lg:flex lg:flex-1 lg:justify-end">
           <!-- Barre de recherche globale -->
@@ -80,7 +80,7 @@
                     :key="`${result.type}-${result.id}`"
                   >
                     <button
-                      class="w-full flex items-center gap-3 px-4 py-2 text-left hover:bg-gray-100 transition"
+                      class="w-full flex items-center gap-3 px-4 py-2 text-left hover:bg-gray-100 transition-all transform hover:scale-[1.02]"
                       @mousedown.prevent="selectSearchResult(result)"
                     >
                       <img
@@ -142,11 +142,12 @@
       <div class="container mx-auto">
         <component
           :is="currentComponent"
-          @show-details="showDetails"
+          @show-actor-details="showActorDetails"
           @show-actor="showActorDetails"
           @show-movie="showMovieDetails"
           :film="selectedFilm"
           :person="selectedPerson"
+          :initial-person-id="initialPersonId"
           @navigate="currentPage = $event"
           @back="handleBack"
         />
@@ -161,6 +162,7 @@ import ActeursPage from "./components/ActeursPage.vue";
 import RealisateursPage from "./components/RealisateursPage.vue";
 import FilmDetails from "./components/FilmDetails.vue";
 import PersonDetails from "./components/PersonDetails.vue";
+import FilmCard from "./components/FilmCard.vue"; // Importation du nouveau composant
 import {
   searchMulti,
   getMovieDetails as fetchMovieDetails,
@@ -175,12 +177,14 @@ export default {
     RealisateursPage,
     FilmDetails,
     PersonDetails,
+    FilmCard,
   },
   data() {
     return {
       currentPage: "films", // "films" | "acteurs" | "realisateurs"
       selectedFilm: null,
       selectedPerson: null,
+      initialPersonId: null, // Pour pré-charger une personne
       globalSearchQuery: "",
       globalSearchResults: [],
       globalSearchLoading: false,
@@ -195,21 +199,26 @@ export default {
       if (this.selectedFilm) return "FilmDetails";
       if (this.selectedPerson) return "PersonDetails";
       if (this.currentPage === "films") return "HomeFilms";
+      this.initialPersonId = null; // Réinitialiser quand on change de page manuellement
+      // La prop initialPersonId est passée aux composants de page
       if (this.currentPage === "acteurs") return "ActeursPage";
       if (this.currentPage === "realisateurs") return "RealisateursPage";
       return "HomeFilms";
     },
   },
   methods: {
-    showDetails(film) {
-      this.selectedFilm = film;
+    navigateTo(page) {
+      this.currentPage = page;
+      this.selectedFilm = null;
       this.selectedPerson = null;
+      this.initialPersonId = null;
     },
     async showActorDetails(actorId) {
       try {
         const details = await fetchPersonDetails(actorId);
         this.selectedPerson = details;
         this.selectedFilm = null;
+        this.initialPersonId = null;
       } catch (error) {
         console.error("Erreur lors de la récupération des détails de l'acteur:", error);
       }
@@ -219,6 +228,7 @@ export default {
         const details = await fetchMovieDetails(movieId);
         this.selectedFilm = details;
         this.selectedPerson = null;
+        this.initialPersonId = null;
       } catch (error) {
         console.error("Erreur lors de la récupération des détails du film:", error);
       }
@@ -229,6 +239,7 @@ export default {
       } else if (this.selectedPerson) {
         this.selectedPerson = null;
       }
+      this.initialPersonId = null;
     },
     onGlobalSearchInput() {
       if (this.searchDebounceTimer) {
@@ -281,7 +292,7 @@ export default {
         if (result.type === "movie") {
           await this.openMovie(result.id);
         } else if (result.type === "person") {
-          await this.openPerson(result.id);
+          await this.openPerson(result);
         }
       } catch (error) {
         console.error("Erreur lors de la sélection du résultat:", error);
@@ -294,20 +305,14 @@ export default {
         const details = await fetchMovieDetails(id);
         this.selectedFilm = details;
         this.selectedPerson = null;
-        this.currentPage = "films";
+        // On ne change pas la currentPage ici pour rester cohérent
       } finally {
         this.globalSearchLoading = false;
       }
     },
-    async openPerson(id) {
-      this.globalSearchLoading = true;
-      try {
-        const details = await fetchPersonDetails(id);
-        this.selectedPerson = details;
-        this.selectedFilm = null;
-      } finally {
-        this.globalSearchLoading = false;
-      }
+    async openPerson(personResult) {
+      // Appelle directement la méthode qui charge et affiche les détails de la personne
+      await this.showActorDetails(personResult.id);
     },
     openSearchDropdown() {
       this.cancelCloseDropdown();
