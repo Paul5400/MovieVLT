@@ -29,7 +29,6 @@
         <a href="#" class="text-sm font-semibold text-white">Log in &rarr;</a>
       </div>
     </nav>
-    <!-- (Optionnel) Mobile menu peut être ajouté ici si nécessaire -->
   </header>
 </template>
 

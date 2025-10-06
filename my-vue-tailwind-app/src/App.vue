@@ -359,5 +359,4 @@ export default {
 </script>
 
 <style>
-/* Ajoutez ici vos styles globaux si besoin */
 </style>
