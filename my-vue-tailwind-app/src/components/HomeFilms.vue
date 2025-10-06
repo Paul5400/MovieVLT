@@ -1,4 +1,7 @@
-<!-- filepath: /home/paul/Documents/Web/S5/MovieVLT/my-vue-tailwind-app/src/components/HomeFilms.vue -->
+<!-- 
+  HomeFilms.vue - Page d'accueil des films avec filtres et recherche
+  Affiche les films récents, permet la recherche et le filtrage avec pagination
+-->
 <template>
   <div class="p-6 lg:p-10 text-white">
     <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-8">
@@ -6,22 +9,31 @@
         <h2 class="text-3xl font-bold">Vitrine des films</h2>
         <p class="mt-2 text-gray-300">Découvrez les sorties de l'année ou recherchez un film précis.</p>
       </div>
-      <div class="w-full lg:w-auto">
-        <div class="flex flex-col sm:flex-row sm:items-center gap-3">
-          <input
-            v-model="searchInput"
-            @keyup.enter="onSearch"
-            type="text"
-            placeholder="Rechercher un film (ex: Dune Part Two)"
-            class="w-full sm:w-80 rounded-full px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-          <button
-            @click="onSearch"
-            class="inline-flex items-center justify-center rounded-full bg-indigo-500 px-5 py-2 font-semibold hover:bg-indigo-600 transition"
-          >
-            Rechercher
-          </button>
-        </div>
+    </div>
+
+    <!-- Composant de filtres -->
+    <FilmFilters 
+      :filters="activeFilters"
+      @filtersChanged="onFiltersChanged"
+    />
+
+    <!-- Barre de recherche -->
+    <div class="mb-8">
+      <div class="flex flex-col sm:flex-row sm:items-center gap-3 max-w-md mx-auto">
+        <input
+          v-model="searchInput"
+          @input="onSearchInput"
+          @keyup.enter="onSearch"
+          type="text"
+          placeholder="Rechercher un film (ex: Dune Part Two)"
+          class="w-full sm:w-80 rounded-full px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        />
+        <button
+          @click="onSearch"
+          class="inline-flex items-center justify-center rounded-full bg-indigo-500 px-5 py-2 font-semibold hover:bg-indigo-600 transition"
+        >
+          Rechercher
+        </button>
       </div>
     </div>
     <div v-if="loading && !movies.length" class="text-center">Chargement...</div>
@@ -48,6 +60,37 @@
         Voir plus
       </button>
     </div>
+
+    <!-- Informations sur les résultats -->
+    <div v-if="movies.length > 0" class="mt-6 text-center">
+      <p class="text-gray-300">
+        {{ searchInput ? `${totalResults} résultats pour "${searchInput}"` : 
+           `${totalResults} films trouvés` }}
+      </p>
+    </div>
+
+    <!-- Pagination -->
+    <div v-if="totalPages > 1" class="flex justify-center space-x-2 mt-8">
+      <button
+        @click="goToPage(currentPage - 1)"
+        :disabled="currentPage <= 1"
+        class="px-4 py-2 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/20 transition-colors"
+      >
+        Précédent
+      </button>
+      
+      <span class="px-4 py-2 rounded-lg bg-indigo-500/20 border border-indigo-500/30 text-indigo-300">
+        Page {{ currentPage }} sur {{ totalPages }}
+      </span>
+      
+      <button
+        @click="goToPage(currentPage + 1)"
+        :disabled="currentPage >= totalPages"
+        class="px-4 py-2 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/20 transition-colors"
+      >
+        Suivant
+      </button>
+    </div>
   </div>
 </template>
 
@@ -55,14 +98,19 @@
 import {
   discoverRecentMovies,
   searchMovies as searchMoviesByTitle,
+  getMovieDetails as fetchMovieDetails,
+  discoverMoviesWithFilters,
 } from "../services/tmdb";
 import FilmCard from "./FilmCard.vue";
+import FilmFilters from "./FilmFilters.vue";
 
 export default {
   name: "HomeFilms",
   components: {
     FilmCard,
+    FilmFilters,
   },
+  emits: ["show-details"],
   data() {
     const currentYear = new Date().getFullYear();
     return {
@@ -72,8 +120,21 @@ export default {
       currentYear,
       searchInput: "",
       lastQuery: "",
-      displayLimit: 10,
-      moviesPerPage: 10,
+      searchDebounceTimer: null,
+      
+      // Pagination
+      currentPage: 1,
+      totalPages: 0,
+      totalResults: 0,
+      
+      // Filtres
+      activeFilters: {
+        type: '',
+        year: '',
+        genre_ids: [],
+        vote_average_gte: 0,
+        sort_by: 'popularity.desc'
+      }
     };
   },
   computed: {
@@ -88,40 +149,92 @@ export default {
     this.fetchMovies();
   },
   methods: {
+    // Réinitialise la limite d'affichage
     resetDisplayLimit() {
       this.displayLimit = 10;
     },
-    async fetchMovies(query = "") {
-      const trimmedQuery = query.trim();
+    // Récupère les films selon les filtres et la recherche
+    async fetchMovies() {
       this.loading = true;
       this.error = null;
+      
       try {
-        if (trimmedQuery) {
-          const { results } = await searchMoviesByTitle(trimmedQuery, { page: 1 });
-          this.movies = results;
-          this.resetDisplayLimit();
-          this.lastQuery = trimmedQuery;
-          if (!results.length) {
-            this.error = "Aucun film trouvé pour cette recherche.";
-          }
+        let result;
+        
+        if (this.searchInput.trim()) {
+          // Recherche par titre
+          result = await searchMoviesByTitle(this.searchInput.trim(), { page: this.currentPage });
         } else {
-          const { results } = await discoverRecentMovies({ year: this.currentYear });
-          this.movies = results;
-          this.resetDisplayLimit();
-          this.lastQuery = "";
-          if (!results.length) {
-            this.error = "Aucun film récent trouvé pour le moment.";
+          // Utiliser les filtres pour découvrir des films
+          const filters = {
+            ...this.activeFilters,
+            page: this.currentPage
+          };
+          
+          // Si aucun filtre n'est actif, charger les films récents
+          const hasActiveFilters = Object.values(this.activeFilters).some(value => 
+            value && !(Array.isArray(value) && value.length === 0) && value !== 'popularity.desc'
+          );
+          
+          if (hasActiveFilters) {
+            result = await discoverMoviesWithFilters(filters);
+          } else {
+            // Films récents par défaut
+            result = await discoverRecentMovies({ year: this.currentYear, page: this.currentPage });
           }
         }
+        
+        this.movies = result.results || [];
+        this.totalResults = result.totalResults || 0;
+        this.totalPages = result.totalPages || 0;
+        this.currentPage = result.page || 1;
+        this.resetDisplayLimit();
+        
+        if (!this.movies.length) {
+          this.error = this.searchInput.trim() ? 
+            "Aucun film trouvé pour cette recherche." : 
+            "Aucun film trouvé pour ces critères.";
+        }
+        
       } catch (err) {
-        console.error("Erreur lors de la récupération des films :", err);
-        this.error = err.message;
+        console.error("Erreur lors de la récupération des films:", err);
+        this.error = err.message || "Erreur lors de la récupération des films.";
+        this.movies = [];
       } finally {
         this.loading = false;
       }
     },
+    // Recherche avec débouncing (attendre 500ms après la dernière frappe)
+    onSearchInput() {
+      if (this.searchDebounceTimer) {
+        clearTimeout(this.searchDebounceTimer);
+      }
+      this.searchDebounceTimer = setTimeout(() => {
+        this.currentPage = 1;
+        this.fetchMovies();
+      }, 500);
+    },
+    
+    // Recherche immédiate
     onSearch() {
-      this.fetchMovies(this.searchInput);
+      this.currentPage = 1;
+      this.fetchMovies();
+    },
+    
+    // Gestion des changements de filtres
+    onFiltersChanged(filters) {
+      this.activeFilters = { ...filters };
+      this.currentPage = 1;
+      this.fetchMovies();
+    },
+    
+    goToPage(page) {
+      if (page >= 1 && page <= this.totalPages) {
+        this.currentPage = page;
+        this.fetchMovies();
+        // Scroll vers le haut
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     },
     onMovieClick(movieId) {
       this.$emit("show-movie", movieId);
@@ -130,6 +243,12 @@ export default {
       this.displayLimit += this.moviesPerPage;
     },
   },
+  
+  beforeUnmount() {
+    if (this.searchDebounceTimer) {
+      clearTimeout(this.searchDebounceTimer);
+    }
+  }
 };
 </script>
 

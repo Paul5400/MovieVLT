@@ -1,3 +1,7 @@
+<!-- 
+  FilmCard.vue - Carte d'affichage d'un film
+  Composant réutilisable pour afficher un film avec poster, titre et note
+-->
 <template>
   <article
     class="group bg-gray-800/70 rounded-xl overflow-hidden shadow border border-gray-700 hover:border-indigo-400 hover:shadow-lg transition-all transform hover:scale-105 cursor-pointer flex flex-col"

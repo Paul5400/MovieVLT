@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="600" viewBox="0 0 400 600">
+  <rect width="400" height="600" fill="#1f2937"/>
+  <g transform="translate(200,300)">
+    <circle cx="0" cy="-50" r="40" fill="#4b5563" opacity="0.5"/>
+    <rect x="-60" y="0" width="120" height="80" rx="8" fill="#4b5563" opacity="0.5"/>
+    <text x="0" y="120" text-anchor="middle" fill="#9ca3af" font-family="Arial, sans-serif" font-size="16">
+      Aucune affiche
+    </text>
+  </g>
+</svg>

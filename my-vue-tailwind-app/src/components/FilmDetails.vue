@@ -1,4 +1,7 @@
-<!-- filepath: /home/paul/Documents/Web/S5/MovieVLT/my-vue-tailwind-app/src/components/FilmDetails.vue -->
+<!-- 
+  FilmDetails.vue - Page de détails d'un film
+  Affiche les informations complètes d'un film avec acteurs cliquables
+-->
 <template>
   <div class="container mx-auto p-4">
     <div class="bg-gray-800 p-6 rounded-md shadow text-white">
@@ -57,12 +60,13 @@ export default {
     },
   },
   methods: {
+    // Extrait l'année à 4 chiffres d'une chaîne
     fixYear(year) {
       const match = String(year).match(/\d{4}/);
       return match ? match[0] : year;
     },
+    // Gestion du clic sur un acteur pour afficher ses détails
     onActorClick(actorId) {
-      // Émettre un événement pour naviguer vers les détails de l'acteur
       this.$emit('show-actor', actorId);
     },
   },

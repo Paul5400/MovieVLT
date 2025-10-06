@@ -1,4 +1,7 @@
-<!-- filepath: /home/paul/Documents/Web/S5/MovieVLT/my-vue-tailwind-app/src/App.vue -->
+<!-- 
+  App.vue - Composant racine de l'application MovieVLT
+  Gère la navigation principale, la recherche globale et l'affichage dynamique des composants
+-->
 <template>
   <div class="relative min-h-screen">
     <div class="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-br from-gray-900/80 via-gray-800/40 to-gray-900/80"></div>
@@ -12,7 +15,7 @@
             <img
               src="/img/freepik-creative-cinema-production-logo-20250924143146QnTF-removebg-preview.webp"
               alt="MovieVLT Logo"
-              class="h-16 w-auto"
+              class="h-20 w-auto"
             />
           </a>
         </div>
@@ -162,7 +165,8 @@ import ActeursPage from "./components/ActeursPage.vue";
 import RealisateursPage from "./components/RealisateursPage.vue";
 import FilmDetails from "./components/FilmDetails.vue";
 import PersonDetails from "./components/PersonDetails.vue";
-import FilmCard from "./components/FilmCard.vue"; // Importation du nouveau composant
+import FilmCard from "./components/FilmCard.vue";
+import FilmFilters from "./components/FilmFilters.vue"; 
 import {
   searchMulti,
   getMovieDetails as fetchMovieDetails,
@@ -178,6 +182,7 @@ export default {
     FilmDetails,
     PersonDetails,
     FilmCard,
+    FilmFilters,
   },
   data() {
     return {
@@ -207,12 +212,14 @@ export default {
     },
   },
   methods: {
+    // Navigation entre les différentes pages
     navigateTo(page) {
       this.currentPage = page;
       this.selectedFilm = null;
       this.selectedPerson = null;
       this.initialPersonId = null;
     },
+    // Affiche les détails d'un acteur/réalisateur
     async showActorDetails(actorId) {
       try {
         const details = await fetchPersonDetails(actorId);
@@ -223,6 +230,7 @@ export default {
         console.error("Erreur lors de la récupération des détails de l'acteur:", error);
       }
     },
+    // Affiche les détails d'un film
     async showMovieDetails(movieId) {
       try {
         const details = await fetchMovieDetails(movieId);

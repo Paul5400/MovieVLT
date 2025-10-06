@@ -1,3 +1,7 @@
+<!-- 
+  PersonDetails.vue - Page de détails d'une personne (acteur/réalisateur)
+  Affiche la biographie et la filmographie avec films cliquables
+-->
 <template>
   <div class="container mx-auto px-4 py-10">
     <button
@@ -118,6 +122,7 @@ export default {
     },
   },
   methods: {
+    // Formate une date en français
     formatDate(dateString) {
       if (!dateString) {
         return "";
@@ -132,8 +137,8 @@ export default {
         return dateString;
       }
     },
+    // Gestion du clic sur un film depuis la filmographie
     onMovieClick(movieId) {
-      // Émettre un événement pour naviguer vers les détails du film
       this.$emit('show-movie', movieId);
     },
   },

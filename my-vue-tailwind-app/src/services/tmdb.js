@@ -1,3 +1,9 @@
+/**
+ * Service TMDB - Interface avec l'API The Movie Database
+ * Gère les appels API, le mapping des données et la construction des URLs d'images
+ */
+
+// Configuration de l'API TMDB
 const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY || '1bbd01570b2ef7ab046523ecd3e1bdfc';
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p';
@@ -99,6 +105,7 @@ function mapMovieDetails(movie) {
   };
 }
 
+// Découvre les films récents pour une année donnée
 export async function discoverRecentMovies({ year = new Date().getFullYear(), page = 1 } = {}) {
   const data = await fetchFromTMDB('/discover/movie', {
     sort_by: 'popularity.desc',
@@ -115,6 +122,7 @@ export async function discoverRecentMovies({ year = new Date().getFullYear(), pa
   };
 }
 
+// Recherche de films par titre
 export async function searchMovies(query, { page = 1, year } = {}) {
   const data = await fetchFromTMDB('/search/movie', {
     query,
@@ -131,6 +139,7 @@ export async function searchMovies(query, { page = 1, year } = {}) {
   };
 }
 
+// Récupère les détails complets d'un film avec cast et crew
 export async function getMovieDetails(tmdbId) {
   const data = await fetchFromTMDB(`/movie/${tmdbId}`, {
     append_to_response: 'credits',
@@ -229,6 +238,7 @@ function mapPersonDetails(person) {
   };
 }
 
+// Recherche de personnes (acteurs/réalisateurs) par nom
 export async function searchPeople(query, { page = 1 } = {}) {
   const data = await fetchFromTMDB('/search/person', {
     query,
@@ -239,6 +249,7 @@ export async function searchPeople(query, { page = 1 } = {}) {
   return Array.isArray(data.results) ? data.results.map(mapPersonSummary) : [];
 }
 
+// Récupère les détails d'une personne avec sa filmographie
 export async function getPersonDetails(personId) {
   const data = await fetchFromTMDB(`/person/${personId}`, {
     append_to_response: 'combined_credits',
@@ -289,6 +300,65 @@ export async function searchMulti(query, { page = 1 } = {}) {
         .map(mapSearchResult)
         .filter(Boolean)
     : [];
+}
+
+// Nouvelle fonction pour récupérer les genres
+export async function getGenres() {
+  try {
+    const data = await fetchFromTMDB('/genre/movie/list');
+    return data.genres || [];
+  } catch (error) {
+    console.error('Erreur lors de la récupération des genres:', error);
+    return [];
+  }
+}
+
+// Nouvelle fonction pour découvrir des films avec filtres
+export async function discoverMoviesWithFilters(filters = {}) {
+  try {
+    const params = {
+      sort_by: filters.sort_by || 'popularity.desc',
+      page: filters.page || 1,
+    };
+
+    // Ajouter les filtres optionnels
+    if (filters.year) {
+      params.primary_release_year = filters.year;
+    }
+    if (filters.genre_ids && filters.genre_ids.length > 0) {
+      params.with_genres = filters.genre_ids.join(',');
+    }
+    if (filters.vote_average_gte) {
+      params['vote_average.gte'] = filters.vote_average_gte;
+    }
+
+    const endpoint = filters.type === 'tv' ? '/discover/tv' : '/discover/movie';
+    const data = await fetchFromTMDB(endpoint, params);
+
+    return {
+      results: Array.isArray(data.results) 
+        ? data.results.map(item => filters.type === 'tv' ? mapTVShow(item) : mapMovieSummary(item)) 
+        : [],
+      page: data.page || 1,
+      totalPages: data.total_pages || 1,
+      totalResults: data.total_results || 0,
+    };
+  } catch (error) {
+    console.error('Erreur lors de la découverte avec filtres:', error);
+    throw error;
+  }
+}
+
+function mapTVShow(tvShow) {
+  return {
+    tmdbID: tvShow.id,
+    imdbID: `tv-${tvShow.id}`,
+    Title: tvShow.name || tvShow.original_name || 'Titre inconnu',
+    Year: tvShow.first_air_date ? tvShow.first_air_date.slice(0, 4) : 'N/A',
+    Poster: buildPosterUrl(tvShow.poster_path),
+    Overview: tvShow.overview || '',
+    type: 'tv'
+  };
 }
 
 export {

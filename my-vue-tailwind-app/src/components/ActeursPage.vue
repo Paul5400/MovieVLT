@@ -1,4 +1,8 @@
 
+<!-- 
+  ActeursPage.vue - Page de recherche et détails des acteurs
+  Permet de rechercher des acteurs et afficher leurs détails avec filmographie
+-->
 <template>
   <div class="p-6 lg:p-10 max-w-6xl mx-auto text-white">
     <h1 class="text-3xl font-bold mb-6 text-center lg:text-left">Découvrir les acteurs</h1>
@@ -74,10 +78,12 @@ export default {
     }
   },
   methods: {
+    // Recherche d'acteurs par nom
     async searchActors() {
       const query = this.searchQuery.trim();
       if (!query) {
         this.actors = [];
+        this.selectedActor = null;
         this.error = "";
         return;
       }
@@ -118,10 +124,9 @@ export default {
       }
     },
     onMovieClick(movieId) {
-      // Émettre un événement pour naviguer vers les détails du film
       this.$emit('show-movie', movieId);
-    },
-  },
+    }
+  }
 };
 </script>
 

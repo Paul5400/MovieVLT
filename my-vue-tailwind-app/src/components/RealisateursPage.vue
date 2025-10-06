@@ -1,3 +1,7 @@
+<!-- 
+  RealisateursPage.vue - Page de recherche et détails des réalisateurs
+  Permet de rechercher des réalisateurs et afficher leurs films
+-->
 <template>
   <div class="p-6 lg:p-10 max-w-6xl mx-auto text-white">
     <h1 class="text-3xl font-bold mb-6 text-center lg:text-left">Explorer les réalisateurs</h1>
@@ -117,8 +121,8 @@ export default {
         return dateString;
       }
     },
+    // Gestion du clic sur un film depuis la filmographie du réalisateur
     onMovieClick(movieId) {
-      // Émettre un événement pour naviguer vers les détails du film
       this.$emit('show-movie', movieId);
     },
   },
