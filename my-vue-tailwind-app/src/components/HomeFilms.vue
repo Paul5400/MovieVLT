@@ -40,10 +40,10 @@
     <div v-if="error" class="text-red-500 text-center">{{ error }}</div>
     <div
       v-else-if="movies && movies.length"
-      class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6"
+      class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 animate-fade-in"
     >
       <FilmCard
-        v-for="(movie, index) in displayedMovies"
+        v-for="(movie, index) in movies"
         :key="movie.tmdbID || movie.imdbID || index"
         :movie="movie"
         @show-movie="onMovieClick"
@@ -127,19 +127,10 @@ export default {
       }
     };
   },
-  computed: {
-    displayedMovies() {
-      return this.movies.slice(0, this.displayLimit);
-    },
-  },
   mounted() {
     this.fetchMovies();
   },
   methods: {
-    // Réinitialise la limite d'affichage
-    resetDisplayLimit() {
-      this.displayLimit = 10;
-    },
     // Récupère les films selon les filtres et la recherche
     async fetchMovies() {
       this.loading = true;
@@ -175,7 +166,6 @@ export default {
         this.totalResults = result.totalResults || 0;
         this.totalPages = result.totalPages || 0;
         this.currentPage = result.page || 1;
-        this.resetDisplayLimit();
         
         if (!this.movies.length) {
           this.error = this.searchInput.trim() ? 

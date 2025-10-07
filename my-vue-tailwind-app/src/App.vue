@@ -143,17 +143,20 @@
     <!-- Main Content: affichage dynamique en fonction de la navigation -->
     <section class="py-12">
       <div class="container mx-auto">
-        <component
-          :is="currentComponent"
-          @show-actor-details="showActorDetails"
-          @show-actor="showActorDetails"
-          @show-movie="showMovieDetails"
-          :film="selectedFilm"
-          :person="selectedPerson"
-          :initial-person-id="initialPersonId"
-          @navigate="currentPage = $event"
-          @back="handleBack"
-        />
+        <transition name="page-fade" mode="out-in">
+          <component
+            :is="currentComponent"
+            :key="componentKey"
+            @show-actor-details="showActorDetails"
+            @show-actor="showActorDetails"
+            @show-movie="showMovieDetails"
+            :film="selectedFilm"
+            :person="selectedPerson"
+            :initial-person-id="initialPersonId"
+            @navigate="currentPage = $event"
+            @back="handleBack"
+          />
+        </transition>
       </div>
     </section>
   </div>
@@ -209,6 +212,9 @@ export default {
       if (this.currentPage === "acteurs") return "ActeursPage";
       if (this.currentPage === "realisateurs") return "RealisateursPage";
       return "HomeFilms";
+    },
+    componentKey() {
+      return this.selectedFilm?.id || this.selectedPerson?.id || this.currentPage;
     },
   },
   methods: {
@@ -359,4 +365,25 @@ export default {
 </script>
 
 <style>
+.page-fade-enter-active,
+.page-fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.page-fade-enter-from,
+.page-fade-leave-to {
+  opacity: 0;
+}
+
+/* Animation d'apparition pour les grilles */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out forwards;
+}
 </style>
