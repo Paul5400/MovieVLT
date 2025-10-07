@@ -4,7 +4,7 @@
 -->
 <template>
   <article
-    class="group bg-gray-800/70 rounded-xl overflow-hidden shadow border border-gray-700 hover:border-indigo-400 hover:shadow-lg transition-all transform hover:scale-105 cursor-pointer flex flex-col"
+    class="group bg-gray-800/70 rounded-xl overflow-hidden shadow border border-gray-700 hover:border-indigo-400 hover:shadow-lg transition-all transform hover:scale-105 active:scale-100 cursor-pointer flex flex-col"
     @click="$emit('show-movie', movie.tmdbID)"
   >
     <div class="relative h-56 w-full">
