@@ -8,7 +8,23 @@
       <h2 class="text-3xl font-bold mb-4">{{ film.Title }}</h2>
       <p><span class="font-semibold">Année :</span> {{ fixYear(film.Year) }}</p>
       <p><span class="font-semibold">Genre :</span> {{ film.Genre }}</p>
-      <p><span class="font-semibold">Réalisateur :</span> {{ film.Director }}</p>
+      <div class="mt-2">
+        <span class="font-semibold">Réalisateur :</span>
+        <button
+          v-if="film.DirectorInfo"
+          @click="onDirectorClick(film.DirectorInfo.id)"
+          class="inline-flex items-center gap-2 bg-gray-700 hover:bg-indigo-600 px-3 py-1 rounded-full text-sm transition-all transform hover:scale-105 ml-2"
+        >
+          <img
+            v-if="film.DirectorInfo.profile"
+            :src="film.DirectorInfo.profile"
+            :alt="film.DirectorInfo.name"
+            class="w-6 h-6 rounded-full object-cover"
+          />
+          <span>{{ film.DirectorInfo.name }}</span>
+        </button>
+        <span v-else class="ml-1">{{ film.Director }}</span>
+      </div>
       
       <!-- Affichage des acteurs avec noms cliquables -->
       <div v-if="film.CastMembers && film.CastMembers.length" class="mt-2">
@@ -68,6 +84,10 @@ export default {
     // Gestion du clic sur un acteur pour afficher ses détails
     onActorClick(actorId) {
       this.$emit('show-actor', actorId);
+    },
+    // Gestion du clic sur un réalisateur pour afficher ses détails
+    onDirectorClick(directorId) {
+      this.$emit('show-director', directorId);
     },
   },
 };
