@@ -11,12 +11,6 @@
       </div>
     </div>
 
-    <!-- Composant de filtres -->
-    <FilmFilters 
-      :filters="activeFilters"
-      @filtersChanged="onFiltersChanged"
-    />
-
     <!-- Barre de recherche -->
     <div class="mb-8">
       <div class="flex flex-col sm:flex-row sm:items-center gap-3 max-w-md mx-auto">
@@ -36,6 +30,12 @@
         </button>
       </div>
     </div>
+
+    <!-- Composant de filtres -->
+    <FilmFilters 
+      :filters="activeFilters"
+      @filtersChanged="onFiltersChanged"
+    />
     <div v-if="loading && !movies.length" class="text-center">Chargement...</div>
     <div v-if="error" class="text-red-500 text-center">{{ error }}</div>
     <div
