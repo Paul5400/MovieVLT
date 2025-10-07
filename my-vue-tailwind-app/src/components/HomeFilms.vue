@@ -51,16 +51,6 @@
     </div>
     <div v-else class="text-center text-gray-400">Aucun film à afficher.</div>
 
-    <!-- Bouton "Voir plus" -->
-    <div v-if="canLoadMore" class="mt-10 text-center">
-      <button
-        @click="loadMoreMovies"
-        class="rounded-full bg-indigo-500 px-8 py-3 font-semibold text-white hover:bg-indigo-600 transition-transform hover:scale-105"
-      >
-        Voir plus
-      </button>
-    </div>
-
     <!-- Informations sur les résultats -->
     <div v-if="movies.length > 0" class="mt-6 text-center">
       <p class="text-gray-300">
@@ -140,9 +130,6 @@ export default {
   computed: {
     displayedMovies() {
       return this.movies.slice(0, this.displayLimit);
-    },
-    canLoadMore() {
-      return this.movies.length > this.displayLimit;
     },
   },
   mounted() {
@@ -238,9 +225,6 @@ export default {
     },
     onMovieClick(movieId) {
       this.$emit("show-movie", movieId);
-    },
-    loadMoreMovies() {
-      this.displayLimit += this.moviesPerPage;
     },
   },
   
