@@ -99,3 +99,7 @@
  ---
  
  Ce projet a été conçu pour être modulaire et facile à maintenir, en séparant clairement la logique (services), les vues (composants) et la gestion de l'état (composant `App.vue`).
+***
+ ANDRIEU Paul
+ LAMBERT Valentino
+ ***
