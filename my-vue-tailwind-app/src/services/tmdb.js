@@ -94,10 +94,18 @@ function mapMovieDetails(movie) {
       }))
     : [];
 
+  // Conserver les informations du réalisateur avec son ID pour le rendre cliquable
+  const directorInfo = director ? {
+    id: director.id,
+    name: director.name,
+    profile: buildProfileUrl(director.profile_path)
+  } : null;
+
   return {
     ...summary,
     Genre: genres,
     Director: director?.name || 'Inconnu',
+    DirectorInfo: directorInfo, // Nouvelle propriété avec les détails complets du réalisateur
     Plot: movie.overview || 'Synopsis non disponible.',
     Runtime: movie.runtime || null,
     Actors: actors,

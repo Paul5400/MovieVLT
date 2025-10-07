@@ -149,6 +149,7 @@
             :key="componentKey"
             @show-actor-details="showActorDetails"
             @show-actor="showActorDetails"
+            @show-director="showActorDetails"
             @show-movie="showMovieDetails"
             :film="selectedFilm"
             :person="selectedPerson"
