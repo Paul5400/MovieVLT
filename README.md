@@ -7,7 +7,7 @@
  
  L'application offre une interface moderne et réactive pour une expérience de découverte cinématographique fluide.
  
- *(https://github.com/Paul5400/MovieVLT/blob/a7d8b527e64f61bdc52c3e9d41d24fe591eca92b/Capture%20d%E2%80%99%C3%A9cran%20du%202025-10-07%2014-28-20.png)*
+ *[!image alt](https://github.com/Paul5400/MovieVLT/blob/a7d8b527e64f61bdc52c3e9d41d24fe591eca92b/Capture%20d%E2%80%99%C3%A9cran%20du%202025-10-07%2014-28-20.png)*
  
  ## ✨ Fonctionnalités
  
