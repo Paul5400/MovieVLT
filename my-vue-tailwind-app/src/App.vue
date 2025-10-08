@@ -34,6 +34,7 @@
           <a href="#" @click.prevent="navigateTo('films')" class="text-sm font-semibold text-white">Films</a>
           <a href="#" @click.prevent="navigateTo('acteurs')" class="text-sm font-semibold text-white">Acteurs</a>
           <a href="#" @click.prevent="navigateTo('realisateurs')" class="text-sm font-semibold text-white">Réalisateurs</a>
+          <a href="#" @click.prevent="navigateTo('about')" class="text-sm font-semibold text-white">À propos</a>
         </div>
         <div class="hidden lg:flex lg:flex-1 lg:justify-end">
           <!-- Barre de recherche globale -->
@@ -117,9 +118,8 @@
       </nav>
     </header>
 
-    <!-- Hero Section avec overlay moderne -->
-    <div class="relative isolate px-6 pt-14 lg:px-8">
-      <!-- Background décoratif avec blur -->
+    <!-- Hero Section - affiché seulement sur certaines pages -->
+    <div v-if="showHeroSection" class="relative isolate px-6 pt-14 lg:px-8">
       <div
         aria-hidden="true"
         class="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"
@@ -141,7 +141,7 @@
     </div>
 
     <!-- Main Content: affichage dynamique en fonction de la navigation -->
-    <section class="py-12">
+    <section :class="showHeroSection ? 'py-12' : 'pt-24 pb-12'">
       <div class="container mx-auto">
         <transition name="page-fade" mode="out-in">
           <component
@@ -169,6 +169,7 @@ import ActeursPage from "./components/ActeursPage.vue";
 import RealisateursPage from "./components/RealisateursPage.vue";
 import FilmDetails from "./components/FilmDetails.vue";
 import PersonDetails from "./components/PersonDetails.vue";
+import AboutPage from "./components/AboutPage.vue";
 import {
   searchMulti,
   getMovieDetails as fetchMovieDetails,
@@ -183,10 +184,11 @@ export default {
     RealisateursPage,
     FilmDetails,
     PersonDetails,
+    AboutPage,
   },
   data() {
     return {
-      currentPage: "films", // "films" | "acteurs" | "realisateurs"
+      currentPage: "films", // "films" | "acteurs" | "realisateurs" | "about"
       selectedFilm: null,
       selectedPerson: null,
       initialPersonId: null, // Pour pré-charger une personne
@@ -208,10 +210,15 @@ export default {
       // La prop initialPersonId est passée aux composants de page
       if (this.currentPage === "acteurs") return "ActeursPage";
       if (this.currentPage === "realisateurs") return "RealisateursPage";
+      if (this.currentPage === "about") return "AboutPage";
       return "HomeFilms";
     },
     componentKey() {
       return this.selectedFilm?.id || this.selectedPerson?.id || this.currentPage;
+    },
+    // Affiche la section hero seulement sur certaines pages
+    showHeroSection() {
+      return !this.selectedFilm && !this.selectedPerson && this.currentPage !== 'about';
     },
   },
   methods: {
