@@ -36,7 +36,7 @@
       :filters="activeFilters"
       @filtersChanged="onFiltersChanged"
     />
-    <LoadingSpinner v-if="loading && !movies.length" message="Recherche des films en cours..." />
+    <div v-if="loading && !movies.length" class="text-center">Chargement...</div>
     <div v-if="error" class="text-red-500 text-center">{{ error }}</div>
     <div
       v-else-if="movies && movies.length"
@@ -93,14 +93,12 @@ import {
 } from "../services/tmdb";
 import FilmCard from "./FilmCard.vue";
 import FilmFilters from "./FilmFilters.vue";
-import LoadingSpinner from "./LoadingSpinner.vue";
 
 export default {
   name: "HomeFilms",
   components: {
     FilmCard,
     FilmFilters,
-    LoadingSpinner,
   },
   emits: ["show-details"],
   data() {
