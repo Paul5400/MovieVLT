@@ -169,8 +169,6 @@ import ActeursPage from "./components/ActeursPage.vue";
 import RealisateursPage from "./components/RealisateursPage.vue";
 import FilmDetails from "./components/FilmDetails.vue";
 import PersonDetails from "./components/PersonDetails.vue";
-import FilmCard from "./components/FilmCard.vue";
-import FilmFilters from "./components/FilmFilters.vue"; 
 import {
   searchMulti,
   getMovieDetails as fetchMovieDetails,
@@ -185,8 +183,6 @@ export default {
     RealisateursPage,
     FilmDetails,
     PersonDetails,
-    FilmCard,
-    FilmFilters,
   },
   data() {
     return {
