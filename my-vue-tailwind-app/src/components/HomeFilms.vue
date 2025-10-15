@@ -1,46 +1,47 @@
-<!-- 
-  HomeFilms.vue - Page d'accueil des films avec filtres et recherche
-  Affiche les films récents, permet la recherche et le filtrage avec pagination
--->
+<!-- HomeFilms - Page films avec recherche et filtres responsive -->
 <template>
-  <div class="p-6 lg:p-10 text-white">
-    <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-8">
-      <div>
-        <h2 class="text-3xl font-bold">Vitrine des films</h2>
-        <p class="mt-2 text-gray-300">Découvrez les sorties de l'année ou recherchez un film précis.</p>
+  <div class="px-4 py-6 sm:px-6 lg:px-10 lg:py-10 text-white">
+    <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4 mb-6 sm:mb-8">
+      <div class="text-center lg:text-left">
+        <h2 class="text-2xl sm:text-3xl font-bold">Vitrine des films</h2>
+        <p class="mt-2 text-sm sm:text-base text-gray-300">Découvrez les sorties de l'année ou recherchez un film précis.</p>
       </div>
     </div>
 
     <!-- Barre de recherche -->
-    <div class="mb-8">
-      <div class="flex flex-col sm:flex-row sm:items-center gap-3 max-w-md mx-auto">
+    <div class="mb-6 sm:mb-8">
+      <div class="flex flex-col sm:flex-row sm:items-center gap-3 max-w-full sm:max-w-md mx-auto">
         <input
           v-model="searchInput"
           @input="onSearchInput"
           @keyup.enter="onSearch"
           type="text"
           placeholder="Rechercher un film (ex: Dune Part Two)"
-          class="w-full sm:w-80 rounded-full px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          class="w-full sm:w-80 rounded-full px-4 py-3 sm:py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm sm:text-base"
         />
         <button
           @click="onSearch"
-          class="inline-flex items-center justify-center rounded-full bg-indigo-500 px-5 py-2 font-semibold hover:bg-indigo-600 transition"
+          class="w-full sm:w-auto inline-flex items-center justify-center rounded-full bg-indigo-500 px-5 py-3 sm:py-2 font-semibold hover:bg-indigo-600 transition text-sm sm:text-base"
         >
           Rechercher
         </button>
       </div>
     </div>
 
-    <!-- Composant de filtres -->
+    <!-- Composant de filtres responsive -->
     <FilmFilters 
       :filters="activeFilters"
       @filtersChanged="onFiltersChanged"
     />
-    <div v-if="loading && !movies.length" class="text-center">Chargement...</div>
-    <div v-if="error" class="text-red-500 text-center">{{ error }}</div>
+    <div v-if="loading && !movies.length" class="text-center py-8">
+      <div class="text-sm sm:text-base">Chargement...</div>
+    </div>
+    <div v-if="error" class="text-red-500 text-center py-8">
+      <div class="text-sm sm:text-base">{{ error }}</div>
+    </div>
     <div
       v-else-if="movies && movies.length"
-      class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 animate-fade-in"
+      class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 lg:gap-6 animate-fade-in"
     >
       <FilmCard
         v-for="(movie, index) in movies"
@@ -52,31 +53,28 @@
     <div v-else class="text-center text-gray-400">Aucun film à afficher.</div>
 
     <!-- Informations sur les résultats -->
-    <div v-if="movies.length > 0" class="mt-6 text-center">
-      <p class="text-gray-300">
-        {{ searchInput ? `${totalResults} résultats pour "${searchInput}"` : 
-           `${totalResults} films trouvés` }}
-      </p>
+    <div v-if="movies && movies.length && !loading" class="mb-4 sm:mb-6 text-center lg:text-left">
+      <p class="text-sm sm:text-base text-gray-300">{{ movies.length }} films trouvés - Page {{ currentPage }} sur {{ totalPages }}</p>
     </div>
 
     <!-- Pagination -->
-    <div v-if="totalPages > 1" class="flex justify-center space-x-2 mt-8">
+    <div v-if="totalPages > 1" class="mt-8 sm:mt-12 flex justify-center">
       <button
         @click="goToPage(currentPage - 1)"
         :disabled="currentPage <= 1"
-        class="px-4 py-2 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/20 transition-colors"
+        class="w-full sm:w-auto px-4 py-2 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/20 transition-colors text-sm sm:text-base"
       >
         Précédent
       </button>
       
-      <span class="px-4 py-2 rounded-lg bg-indigo-500/20 border border-indigo-500/30 text-indigo-300">
+      <span class="w-full sm:w-auto px-4 py-2 rounded-lg bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 text-center text-sm sm:text-base">
         Page {{ currentPage }} sur {{ totalPages }}
       </span>
       
       <button
         @click="goToPage(currentPage + 1)"
         :disabled="currentPage >= totalPages"
-        class="px-4 py-2 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/20 transition-colors"
+        class="w-full sm:w-auto px-4 py-2 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/20 transition-colors text-sm sm:text-base"
       >
         Suivant
       </button>
@@ -104,6 +102,7 @@ export default {
   data() {
     const currentYear = new Date().getFullYear();
     return {
+      // Données films
       movies: [],
       loading: false,
       error: null,
@@ -112,12 +111,10 @@ export default {
       lastQuery: "",
       searchDebounceTimer: null,
       
-      // Pagination
       currentPage: 1,
       totalPages: 0,
       totalResults: 0,
       
-      // Filtres
       activeFilters: {
         type: '',
         year: '',
@@ -131,7 +128,6 @@ export default {
     this.fetchMovies();
   },
   methods: {
-    // Récupère les films selon les filtres et la recherche
     async fetchMovies() {
       this.loading = true;
       this.error = null;
@@ -140,16 +136,13 @@ export default {
         let result;
         
         if (this.searchInput.trim()) {
-          // Recherche par titre
           result = await searchMoviesByTitle(this.searchInput.trim(), { page: this.currentPage });
         } else {
-          // Utiliser les filtres pour découvrir des films
           const filters = {
             ...this.activeFilters,
             page: this.currentPage
           };
           
-          // Si aucun filtre n'est actif, charger les films récents
           const hasActiveFilters = Object.values(this.activeFilters).some(value => 
             value && !(Array.isArray(value) && value.length === 0) && value !== 'popularity.desc'
           );
@@ -157,7 +150,6 @@ export default {
           if (hasActiveFilters) {
             result = await discoverMoviesWithFilters(filters);
           } else {
-            // Films récents par défaut
             result = await discoverRecentMovies({ year: this.currentYear, page: this.currentPage });
           }
         }
@@ -181,7 +173,6 @@ export default {
         this.loading = false;
       }
     },
-    // Recherche avec débouncing (attendre 500ms après la dernière frappe)
     onSearchInput() {
       if (this.searchDebounceTimer) {
         clearTimeout(this.searchDebounceTimer);
@@ -192,13 +183,11 @@ export default {
       }, 500);
     },
     
-    // Recherche immédiate
     onSearch() {
       this.currentPage = 1;
       this.fetchMovies();
     },
     
-    // Gestion des changements de filtres
     onFiltersChanged(filters) {
       this.activeFilters = { ...filters };
       this.currentPage = 1;
@@ -209,7 +198,6 @@ export default {
       if (page >= 1 && page <= this.totalPages) {
         this.currentPage = page;
         this.fetchMovies();
-        // Scroll vers le haut
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     },

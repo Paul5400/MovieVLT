@@ -3,25 +3,50 @@
   Permet de filtrer par type, genre, année, note et tri avec interface interactive
 -->
 <template>
-  <div class="bg-white/10 backdrop-blur-md rounded-2xl p-6 mb-8 shadow-xl border border-white/20">
-    <div class="flex items-center justify-between mb-6">
-      <h3 class="text-xl font-bold text-white">Filtres</h3>
-      <button
-        @click="resetFilters"
-        class="text-sm text-indigo-300 hover:text-white transition-colors duration-200"
-      >
-        Réinitialiser
-      </button>
+  <div class="bg-white/10 backdrop-blur-md rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 shadow-xl border border-white/20">
+    <!-- Header avec bouton toggle pour mobile/tablette seulement -->
+    <div class="flex items-center justify-between mb-4 lg:mb-6">
+      <h3 class="text-lg sm:text-xl font-bold text-white">Filtres</h3>
+      <div class="flex items-center gap-3">
+        <button
+          @click="resetFilters"
+          class="text-xs sm:text-sm text-indigo-300 hover:text-white transition-colors duration-200"
+        >
+          Réinitialiser
+        </button>
+        <!-- Bouton toggle visible seulement sur mobile/tablette -->
+        <button
+          @click="filtersExpanded = !filtersExpanded"
+          class="lg:hidden text-white hover:text-indigo-300 transition-colors flex items-center gap-2"
+        >
+          <span class="text-sm">{{ filtersExpanded ? 'Masquer' : 'Afficher' }}</span>
+          <svg 
+            :class="{ 'rotate-180': filtersExpanded }" 
+            class="w-5 h-5 transform transition-transform"
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+      </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+    <!-- Filtres : toujours visibles sur desktop, collapsibles sur mobile/tablette -->
+    <div 
+      :class="[
+        'grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-end lg:justify-between lg:w-full gap-3 sm:gap-4 lg:gap-4 transition-all duration-300',
+        filtersExpanded ? 'block' : 'hidden lg:flex'
+      ]"
+    >
       <!-- Filtre Type -->
-      <div>
-        <label class="block text-sm font-medium text-gray-200 mb-2">Type</label>
+      <div class="lg:flex-1 lg:min-w-0">
+        <label class="block text-xs sm:text-sm font-medium text-gray-200 mb-1 sm:mb-2">Type</label>
         <select
           v-model="localFilters.type"
           @change="emitFilters"
-          class="w-full rounded-lg border border-gray-300/30 bg-white/20 backdrop-blur-sm text-blue-900 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+          class="w-full rounded-lg border border-gray-300/30 bg-white/20 backdrop-blur-sm text-blue-900 px-3 py-2 sm:py-2 text-xs sm:text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
         >
           <option value="">Tous</option>
           <option value="movie">Films</option>
@@ -30,12 +55,12 @@
       </div>
 
       <!-- Filtre Genre -->
-      <div>
-        <label class="block text-sm font-medium text-gray-200 mb-2">Genre</label>
+      <div class="lg:flex-1 lg:min-w-0">
+        <label class="block text-xs sm:text-sm font-medium text-gray-200 mb-1 sm:mb-2">Genre</label>
         <select
           v-model="selectedGenreId"
           @change="updateGenreFilter"
-          class="w-full rounded-lg border border-gray-300/30 bg-white/20 backdrop-blur-sm text-blue-900 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+          class="w-full rounded-lg border border-gray-300/30 bg-white/20 backdrop-blur-sm text-blue-900 px-3 py-2 sm:py-2 text-xs sm:text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
         >
           <option value="">Tous les genres</option>
           <option v-for="genre in genres" :key="genre.id" :value="genre.id">
@@ -45,12 +70,12 @@
       </div>
 
       <!-- Filtre Année -->
-      <div>
-        <label class="block text-sm font-medium text-gray-200 mb-2">Année</label>
+      <div class="lg:flex-1 lg:min-w-0">
+        <label class="block text-xs sm:text-sm font-medium text-gray-200 mb-1 sm:mb-2">Année</label>
         <select
           v-model="localFilters.year"
           @change="emitFilters"
-          class="w-full rounded-lg border border-gray-300/30 bg-white/20 backdrop-blur-sm text-blue-900 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+          class="w-full rounded-lg border border-gray-300/30 bg-white/20 backdrop-blur-sm text-blue-900 px-3 py-2 sm:py-2 text-xs sm:text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
         >
           <option value="">Toutes</option>
           <option v-for="year in years" :key="year" :value="year">
@@ -60,8 +85,8 @@
       </div>
 
       <!-- Filtre Note minimale -->
-      <div>
-        <label class="block text-sm font-medium text-gray-200 mb-2">
+      <div class="lg:flex-1 lg:min-w-0">
+        <label class="block text-xs sm:text-sm font-medium text-gray-200 mb-1 sm:mb-2">
           Note minimale ({{ localFilters.vote_average_gte || 0 }}/10)
         </label>
         <input
@@ -76,12 +101,12 @@
       </div>
 
       <!-- Filtre Tri -->
-      <div>
-        <label class="block text-sm font-medium text-gray-200 mb-2">Trier par</label>
+      <div class="lg:flex-1 lg:min-w-0">
+        <label class="block text-xs sm:text-sm font-medium text-gray-200 mb-1 sm:mb-2">Trier par</label>
         <select
           v-model="localFilters.sort_by"
           @change="emitFilters"
-          class="w-full rounded-lg border border-gray-300/30 bg-white/20 backdrop-blur-sm text-blue-900 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+          class="w-full rounded-lg border border-gray-300/30 bg-white/20 backdrop-blur-sm text-blue-900 px-3 py-2 sm:py-2 text-xs sm:text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
         >
           <option value="popularity.desc">Popularité (↓)</option>
           <option value="popularity.asc">Popularité (↑)</option>
@@ -96,7 +121,13 @@
     </div>
 
     <!-- Indicateurs de filtres actifs -->
-    <div v-if="hasActiveFilters" class="mt-4 flex flex-wrap gap-2">
+    <div 
+      v-if="hasActiveFilters" 
+      :class="[
+        'mt-3 sm:mt-4 flex flex-wrap gap-2 transition-all duration-300',
+        filtersExpanded ? 'flex' : 'hidden lg:flex'
+      ]"
+    >
       <span
         v-for="filter in activeFiltersDisplay"
         :key="filter.key"
@@ -138,7 +169,8 @@ export default {
       },
       genres: [],
       selectedGenreId: '',
-      years: []
+      years: [],
+      filtersExpanded: false // État d'expansion du menu filtres sur mobile
     };
   },
   computed: {

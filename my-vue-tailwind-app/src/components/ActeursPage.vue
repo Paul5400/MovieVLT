@@ -41,7 +41,6 @@
           </li>
         </ul>
       </aside>
-      <!-- La section des détails est maintenant gérée par PersonDetails.vue -->
     </div>
     <div v-else-if="!loading" class="text-gray-400">Lance une recherche pour découvrir un acteur.</div>
   </div>
@@ -73,12 +72,10 @@ export default {
   },
   mounted() {
     if (this.initialPersonId) {
-      // Si un ID est passé, on demande à App.vue de l'afficher directement
       this.$emit('show-actor-details', this.initialPersonId);
     }
   },
   methods: {
-    // Recherche d'acteurs par nom
     async searchActors() {
       const query = this.searchQuery.trim();
       if (!query) {

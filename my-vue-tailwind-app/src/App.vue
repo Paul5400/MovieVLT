@@ -8,36 +8,44 @@
 
     <!-- Header -->
     <header class="absolute inset-x-0 top-0 z-50">
-      <nav aria-label="Global" class="flex items-center justify-between px-6 py-4 lg:px-8">
+      <nav aria-label="Global" class="flex items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
         <div class="flex lg:flex-1">
           <a href="#" @click.prevent="navigateTo('films')" class="-m-1.5 p-1.5">
             <span class="sr-only">MovieVLT</span>
             <img
               src="/img/freepik-creative-cinema-production-logo-20250924143146QnTF-removebg-preview.webp"
               alt="MovieVLT Logo"
-              class="h-20 w-auto"
+              class="h-12 w-auto sm:h-16 lg:h-20"
             />
           </a>
         </div>
+        
+        <!-- Bouton menu mobile -->
         <div class="flex lg:hidden">
           <button
             type="button"
-            class="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-200"
+            @click="mobileMenuOpen = !mobileMenuOpen"
+            class="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-200 hover:text-white transition-colors"
           >
-            <span class="sr-only">Open main menu</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-6 w-6">
+            <span class="sr-only">{{ mobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu' }}</span>
+            <svg v-if="!mobileMenuOpen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-6 w-6">
               <path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-6 w-6">
+              <path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
           </button>
         </div>
+        <!-- Navigation desktop -->
         <div class="hidden lg:flex lg:gap-x-12">
-          <a href="#" @click.prevent="navigateTo('films')" class="text-sm font-semibold text-white">Films</a>
-          <a href="#" @click.prevent="navigateTo('acteurs')" class="text-sm font-semibold text-white">Acteurs</a>
-          <a href="#" @click.prevent="navigateTo('realisateurs')" class="text-sm font-semibold text-white">Réalisateurs</a>
-          <a href="#" @click.prevent="navigateTo('about')" class="text-sm font-semibold text-white">À propos</a>
+          <a href="#" @click.prevent="navigateTo('films')" class="text-sm font-semibold text-white hover:text-gray-200 transition-colors">Films</a>
+          <a href="#" @click.prevent="navigateTo('acteurs')" class="text-sm font-semibold text-white hover:text-gray-200 transition-colors">Acteurs</a>
+          <a href="#" @click.prevent="navigateTo('realisateurs')" class="text-sm font-semibold text-white hover:text-gray-200 transition-colors">Réalisateurs</a>
+          <a href="#" @click.prevent="navigateTo('about')" class="text-sm font-semibold text-white hover:text-gray-200 transition-colors">À propos</a>
         </div>
+        
+        <!-- Recherche desktop -->
         <div class="hidden lg:flex lg:flex-1 lg:justify-end">
-          <!-- Barre de recherche globale -->
           <div class="relative w-full max-w-xs">
             <input
               v-model="globalSearchQuery"
@@ -116,33 +124,174 @@
           </div>
         </div>
       </nav>
+      
+      <!-- Menu mobile -->
+      <div v-if="mobileMenuOpen" class="lg:hidden">
+        <div class="fixed inset-0 z-50" @click="mobileMenuOpen = false">
+          <div class="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-gray-900 px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10" @click.stop>
+            <div class="flex items-center justify-between">
+              <a href="#" @click.prevent="navigateTo('films')" class="-m-1.5 p-1.5">
+                <span class="sr-only">MovieVLT</span>
+                <img
+                  src="/img/freepik-creative-cinema-production-logo-20250924143146QnTF-removebg-preview.webp"
+                  alt="MovieVLT Logo"
+                  class="h-12 w-auto"
+                />
+              </a>
+              <button
+                type="button"
+                @click="mobileMenuOpen = false"
+                class="-m-2.5 rounded-md p-2.5 text-gray-400 hover:text-white"
+              >
+                <span class="sr-only">Fermer le menu</span>
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <!-- Navigation mobile -->
+            <div class="mt-6 flow-root">
+              <div class="-my-6 divide-y divide-gray-700">
+                <div class="space-y-2 py-6">
+                  <a 
+                    href="#" 
+                    @click.prevent="navigateToMobile('films')" 
+                    class="block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-white hover:bg-gray-800 transition-colors"
+                  >
+                    Films
+                  </a>
+                  <a 
+                    href="#" 
+                    @click.prevent="navigateToMobile('acteurs')" 
+                    class="block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-white hover:bg-gray-800 transition-colors"
+                  >
+                    Acteurs
+                  </a>
+                  <a 
+                    href="#" 
+                    @click.prevent="navigateToMobile('realisateurs')" 
+                    class="block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-white hover:bg-gray-800 transition-colors"
+                  >
+                    Réalisateurs
+                  </a>
+                  <a 
+                    href="#" 
+                    @click.prevent="navigateToMobile('about')" 
+                    class="block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-white hover:bg-gray-800 transition-colors"
+                  >
+                    À propos
+                  </a>
+                </div>
+                
+                <!-- Recherche mobile -->
+                <div class="py-6">
+                  <div class="relative">
+                    <input
+                      v-model="globalSearchQuery"
+                      @input="onGlobalSearchInput"
+                      @focus="openSearchDropdown"
+                      @keydown.enter.prevent="performGlobalSearch"
+                      @keydown.esc.stop.prevent="resetSearch"
+                      @blur="scheduleCloseDropdown"
+                      type="text"
+                      placeholder="Rechercher..."
+                      class="w-full rounded-full border border-gray-600 bg-gray-800 py-2 pl-4 pr-10 text-sm text-white placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                      <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" />
+                      </svg>
+                    </div>
+                    
+                    <!-- Dropdown des résultats mobile -->
+                    <div
+                      v-if="searchDropdownOpen"
+                      class="absolute left-0 right-0 mt-2 rounded-xl border border-gray-600 bg-gray-800 py-2 shadow-2xl z-50"
+                      @mousedown.prevent
+                    >
+                      <div v-if="globalSearchLoading" class="px-4 py-2 text-sm text-gray-400">
+                        Recherche en cours...
+                      </div>
+                      <div v-else-if="globalSearchError" class="px-4 py-2 text-sm text-red-400">
+                        {{ globalSearchError }}
+                      </div>
+                      <template v-else>
+                        <div
+                          v-if="!globalSearchResults.length"
+                          class="px-4 py-2 text-sm text-gray-400"
+                        >
+                          Aucun résultat trouvé.
+                        </div>
+                        <ul v-else class="max-h-60 overflow-y-auto">
+                          <li
+                            v-for="result in globalSearchResults"
+                            :key="`${result.type}-${result.id}`"
+                          >
+                            <button
+                              class="w-full flex items-center gap-3 px-4 py-2 text-left hover:bg-gray-700 transition-all"
+                              @mousedown.prevent="selectSearchResult(result)"
+                            >
+                              <img
+                                v-if="result.image"
+                                :src="result.image"
+                                :alt="result.title"
+                                class="h-12 w-8 object-cover rounded"
+                              />
+                              <div
+                                v-else
+                                class="h-12 w-8 flex items-center justify-center rounded bg-gray-600 text-[10px] font-semibold uppercase text-gray-400"
+                              >
+                                {{ result.type === 'movie' ? 'Film' : 'Pers.' }}
+                              </div>
+                              <div class="flex-1">
+                                <p class="text-sm font-semibold text-white">{{ result.title }}</p>
+                                <p class="text-xs text-gray-400">{{ result.subtitle }}</p>
+                              </div>
+                              <span
+                                class="text-[10px] uppercase tracking-wide text-indigo-400 font-semibold"
+                              >
+                                {{ result.type === 'movie' ? 'Film' : 'Personne' }}
+                              </span>
+                            </button>
+                          </li>
+                        </ul>
+                      </template>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </header>
 
     <!-- Hero Section - affiché seulement sur certaines pages -->
-    <div v-if="showHeroSection" class="relative isolate px-6 pt-14 lg:px-8">
+    <div v-if="showHeroSection" class="relative isolate px-4 pt-20 sm:px-6 lg:px-8">
       <div
         aria-hidden="true"
         class="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"
       >
         <div
           style="clip-path: polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)"
-          class="relative left-1/2 -translate-x-1/2 rotate-30 bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] opacity-30 w-[36rem] h-[20rem]"
+          class="relative left-1/2 -translate-x-1/2 rotate-30 bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] opacity-30 w-[20rem] h-[12rem] sm:w-[36rem] sm:h-[20rem]"
         ></div>
       </div>
       <!-- Overlay principal avec effet de flou en fond semi-transparent -->
-      <section class="container-2xl mx-auto bg-slate-900 bg-opacity-90 backdrop-blur-[80px] bg-clip-padding py-32 sm:py-48 lg:py-56 text-center">
-        <h1 class="text-5xl sm:text-7xl font-extrabold text-white mb-4">
+      <section class="container-2xl mx-auto bg-slate-900 bg-opacity-90 backdrop-blur-[80px] bg-clip-padding py-20 sm:py-32 md:py-48 lg:py-56 text-center">
+        <h1 class="text-3xl sm:text-5xl lg:text-7xl font-extrabold text-white mb-4">
           Vitrine des Films
         </h1>
-        <p class="text-xl text-gray-200 mb-8">
+        <p class="text-base sm:text-lg lg:text-xl text-gray-200 mb-8 max-w-2xl mx-auto px-4">
           Découvrez les films récents, explorez les acteurs et réalisateurs.
         </p>
       </section>
     </div>
 
     <!-- Main Content: affichage dynamique en fonction de la navigation -->
-    <section :class="showHeroSection ? 'py-12' : 'pt-24 pb-12'">
-      <div class="container mx-auto">
+    <section :class="showHeroSection ? 'py-8 sm:py-12' : 'pt-20 sm:pt-24 pb-8 sm:pb-12'">
+      <div class="container mx-auto px-4 sm:px-6 lg:px-8">
         <transition name="page-fade" mode="out-in">
           <component
             :is="currentComponent"
@@ -192,6 +341,7 @@ export default {
       selectedFilm: null,
       selectedPerson: null,
       initialPersonId: null, // Pour pré-charger une personne
+      mobileMenuOpen: false, // État du menu mobile
       globalSearchQuery: "",
       globalSearchResults: [],
       globalSearchLoading: false,
@@ -228,6 +378,12 @@ export default {
       this.selectedFilm = null;
       this.selectedPerson = null;
       this.initialPersonId = null;
+    },
+    
+    // Navigation mobile (ferme le menu après navigation)
+    navigateToMobile(page) {
+      this.navigateTo(page);
+      this.mobileMenuOpen = false;
     },
     // Affiche les détails d'un acteur/réalisateur
     async showActorDetails(actorId) {
@@ -302,6 +458,8 @@ export default {
     async selectSearchResult(result) {
       this.cancelCloseDropdown();
       this.searchDropdownOpen = false;
+      // Fermer le menu mobile quand un résultat est sélectionné
+      this.mobileMenuOpen = false;
       if (!result) {
         return;
       }
@@ -355,8 +513,9 @@ export default {
       this.globalSearchResults = [];
       this.globalSearchError = "";
       this.searchDropdownOpen = false;
-    },
+    }
   },
+
   beforeUnmount() {
     if (this.searchDebounceTimer) {
       clearTimeout(this.searchDebounceTimer);
