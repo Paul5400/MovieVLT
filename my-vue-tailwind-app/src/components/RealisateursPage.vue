@@ -40,7 +40,6 @@
           </li>
         </ul>
       </aside>
-      <!-- La section des détails est maintenant gérée par PersonDetails.vue -->
     </div>
     <div v-else-if="!loading" class="text-gray-400">Recherchez un nom pour découvrir un réalisateur.</div>
   </div>
@@ -121,7 +120,6 @@ export default {
         return dateString;
       }
     },
-    // Gestion du clic sur un film depuis la filmographie du réalisateur
     onMovieClick(movieId) {
       this.$emit('show-movie', movieId);
     },
