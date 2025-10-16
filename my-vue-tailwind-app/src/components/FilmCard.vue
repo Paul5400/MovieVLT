@@ -1,6 +1,12 @@
 <!-- 
-  FilmCard.vue - Carte d'affichage d'un film
-  Composant réutilisable pour afficher un film avec poster, titre et note
+  FilmCard.vue
+  Ce composant affiche une carte individuelle pour un film, incluant son affiche, son titre, et d'autres informations.
+  
+  Props :
+    - movie : Objet contenant les informations du film (titre, affiche, année, etc.).
+  
+  Événements émis :
+    - show-movie : Émis lorsqu'un utilisateur clique sur une carte pour afficher les détails du film.
 -->
 <template>
   <article

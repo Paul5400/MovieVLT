@@ -1,4 +1,3 @@
-
 <!-- 
   ActeursPage.vue - Page de recherche et détails des acteurs
   Permet de rechercher des acteurs et afficher leurs détails avec filmographie

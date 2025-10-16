@@ -1,6 +1,12 @@
 <!-- 
-  FilmFilters.vue - Composant de filtrage pour les films
-  Permet de filtrer par type, genre, année, note et tri avec interface interactive
+  FilmFilters.vue
+  Ce composant permet de filtrer les films selon différents critères (type, genre, année, note, tri).
+  
+  Props :
+    - filters : Objet contenant les filtres actifs (par défaut vide).
+  
+  Événements émis :
+    - filtersChanged : Émis lorsque les filtres sont modifiés.
 -->
 <template>
   <div class="bg-white/10 backdrop-blur-md rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 shadow-xl border border-white/20">
