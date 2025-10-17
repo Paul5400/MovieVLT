@@ -12,6 +12,7 @@
     </button>
     <div class="bg-gray-900/90 text-white rounded-xl sm:rounded-2xl shadow-xl border border-gray-800 overflow-hidden">
       <div class="flex flex-col lg:flex-row">
+        <!-- Section profil -->
         <div class="lg:w-1/3 bg-gray-800/60 p-4 sm:p-6 flex flex-col items-center justify-start">
           <img
             v-if="person.profile"
@@ -34,6 +35,19 @@
               {{ person.age }} ans
             </span>
           </div>
+          <!-- Bouton favoris personne -->
+          <div class="mt-4">
+            <button
+              @click.stop="toggleFavoritePerson"
+              :title="isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'"
+              class="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-black/30 hover:bg-black/50 text-white transition-transform hover:scale-105"
+            >
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" :class="isFavorite ? 'text-red-500' : 'text-white'">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+              <span class="text-sm">Favoris</span>
+            </button>
+          </div>
           <div class="mt-4 sm:mt-6 w-full space-y-1 sm:space-y-2 text-xs sm:text-sm text-gray-300">
             <p v-if="person.birthday">
               <span class="font-semibold text-white">Naissance :</span>
@@ -49,7 +63,9 @@
             </p>
           </div>
         </div>
+        <!-- Section contenu principal -->
         <div class="lg:w-2/3 p-4 sm:p-6 lg:p-10 space-y-6 sm:space-y-8 lg:space-y-10">
+          <!-- Biographie -->
           <section>
             <h2 class="text-lg sm:text-xl lg:text-2xl font-semibold mb-3 sm:mb-4">Biographie</h2>
             <p class="text-gray-300 leading-relaxed whitespace-pre-line text-sm sm:text-base">
@@ -57,6 +73,7 @@
             </p>
           </section>
           
+          <!-- Filmographie -->
           <section v-if="person.knownFor && person.knownFor.length">
             <h2 class="text-lg sm:text-xl lg:text-2xl font-semibold mb-3 sm:mb-4">Films marquants (interprète)</h2>
             <div class="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -82,6 +99,7 @@
               </article>
             </div>
           </section>
+          <!-- Réalisations -->
           <section v-if="person.knownForDirecting && person.knownForDirecting.length">
             <h2 class="text-lg sm:text-xl lg:text-2xl font-semibold mb-3 sm:mb-4">Créations marquantes (réalisateur)</h2>
             <div class="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -114,6 +132,8 @@
 </template>
 
 <script>
+import { isFavorite, toggleFavorite } from '../services/favorites';
+
 export default {
   name: "PersonDetails",
   props: {
@@ -122,7 +142,20 @@ export default {
       required: true,
     },
   },
+  data() {
+    return { isFavorite: false };
+  },
+  mounted() {
+    this.checkFavorite();
+  },
+  watch: {
+    person: {
+      handler() { this.checkFavorite(); },
+      immediate: true
+    }
+  },
   methods: {
+    // Formate une date en français
     formatDate(dateString) {
       if (!dateString) {
         return "";
@@ -137,9 +170,29 @@ export default {
         return dateString;
       }
     },
+    // Gestion du clic sur un film depuis la filmographie
     onMovieClick(movieId) {
       this.$emit('show-movie', movieId);
     },
+    checkFavorite() {
+      if (!this.person || !this.person.id) {
+        this.isFavorite = false;
+        return;
+      }
+      this.isFavorite = isFavorite(this.person.id, 'person');
+    },
+    toggleFavoritePerson() {
+      if (!this.person || !this.person.id) return;
+      const obj = {
+        id: this.person.id,
+        type: 'person',
+        title: this.person.name,
+        poster_path: this.person.profile || null
+      };
+      const nowFav = toggleFavorite(obj);
+      this.isFavorite = nowFav;
+      this.$emit('favorite-changed');
+    }
   },
 };
 </script>

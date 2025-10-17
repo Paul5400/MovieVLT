@@ -37,11 +37,22 @@
           </button>
         </div>
         <!-- Navigation desktop -->
-        <div class="hidden lg:flex lg:gap-x-12">
+        <div class="hidden lg:flex lg:gap-x-12 lg:items-center">
           <a href="#" @click.prevent="navigateTo('films')" class="text-sm font-semibold text-white hover:text-gray-200 transition-colors">Films</a>
           <a href="#" @click.prevent="navigateTo('acteurs')" class="text-sm font-semibold text-white hover:text-gray-200 transition-colors">Acteurs</a>
           <a href="#" @click.prevent="navigateTo('realisateurs')" class="text-sm font-semibold text-white hover:text-gray-200 transition-colors">Réalisateurs</a>
           <a href="#" @click.prevent="navigateTo('about')" class="text-sm font-semibold text-white hover:text-gray-200 transition-colors">À propos</a>
+          
+          <!-- Indicateur de favoris -->
+          <button
+            @click="navigateTo('favorites')"
+            class="relative flex items-center gap-2 text-sm font-semibold text-white hover:text-indigo-300 transition-colors"
+          >
+            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+            Favoris
+          </button>
         </div>
         
         <!-- Recherche desktop -->
@@ -182,6 +193,16 @@
                   >
                     À propos
                   </a>
+                  <a 
+                    href="#" 
+                    @click.prevent="navigateToMobile('favorites')" 
+                    class="block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-white hover:bg-gray-800 transition-colors flex items-center gap-3"
+                  >
+                    <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                    </svg>
+                    <span>Favoris</span>
+                  </a>
                 </div>
                 
                 <!-- Recherche mobile -->
@@ -300,6 +321,9 @@
             @show-actor="showActorDetails"
             @show-director="showActorDetails"
             @show-movie="showMovieDetails"
+            @navigate-to="navigateTo"
+            @favorites-changed="updateFavoritesCount"
+            @favorite-changed="updateFavoritesCount"
             :film="selectedFilm"
             :person="selectedPerson"
             :initial-person-id="initialPersonId"
@@ -319,11 +343,13 @@ import RealisateursPage from "./components/RealisateursPage.vue";
 import FilmDetails from "./components/FilmDetails.vue";
 import PersonDetails from "./components/PersonDetails.vue";
 import AboutPage from "./components/AboutPage.vue";
+import FavoritesPage from "./components/FavoritesPage.vue";
 import {
   searchMulti,
   getMovieDetails as fetchMovieDetails,
   getPersonDetails as fetchPersonDetails,
 } from "./services/tmdb";
+import { getFavoritesCount } from "./services/favorites";
 
 export default {
   name: "App",
@@ -334,10 +360,11 @@ export default {
     FilmDetails,
     PersonDetails,
     AboutPage,
+    FavoritesPage,
   },
   data() {
     return {
-      currentPage: "films", // "films" | "acteurs" | "realisateurs" | "about"
+      currentPage: "films", // "films" | "acteurs" | "realisateurs" | "about" | "favorites"
       selectedFilm: null,
       selectedPerson: null,
       initialPersonId: null, // Pour pré-charger une personne
@@ -349,6 +376,7 @@ export default {
       searchDropdownOpen: false,
       searchDebounceTimer: null,
       searchBlurTimer: null,
+      favoritesCount: 0, // Nombre de films en favoris
     };
   },
   computed: {
@@ -361,6 +389,7 @@ export default {
       if (this.currentPage === "acteurs") return "ActeursPage";
       if (this.currentPage === "realisateurs") return "RealisateursPage";
       if (this.currentPage === "about") return "AboutPage";
+      if (this.currentPage === "favorites") return "FavoritesPage";
       return "HomeFilms";
     },
     componentKey() {
@@ -513,7 +542,15 @@ export default {
       this.globalSearchResults = [];
       this.globalSearchError = "";
       this.searchDropdownOpen = false;
+    },
+    updateFavoritesCount() {
+      this.favoritesCount = getFavoritesCount();
     }
+  },
+
+  mounted() {
+    // Charger le nombre de favoris au démarrage
+    this.updateFavoritesCount();
   },
 
   beforeUnmount() {
